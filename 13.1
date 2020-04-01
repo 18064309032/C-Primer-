@@ -1,0 +1,20 @@
+#include "foo.h"
+
+foo foo::sorted()&&
+{
+	std::cout << "右值被调用" << std::endl;
+	std::sort(m_data.begin(), m_data.begin());
+	return *this;
+}
+foo foo::sorted()const&
+{
+	foo f(*this);
+	std::cout << "左值被调用" << std::endl;
+	std::sort(f.m_data.begin(), f.m_data.end());
+	return *this;
+}
+
+std::vector<int>& foo::get_vcr()
+{
+	return m_data;
+}
