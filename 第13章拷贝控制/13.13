@@ -1,0 +1,27 @@
+#include <iostream>
+#include <vector>
+struct X
+{
+	X() { std::cout << "X()" << std::endl; }
+	X(const X&) { std::cout << "X(const X&)" << std::endl; }
+	X& operator=(const X&) { std::cout << "X& operator(const X&)" << std::endl; }
+	~X() { std::cout << "~X()" << std::endl; }
+};
+
+void test1(X& x1, X* x2)
+{
+	std::vector<X> vcr;
+	vcr.push_back(x1);
+	vcr.push_back(*x2);
+	std::cout << "------- destructor in f -----" << std::endl;
+}
+
+void main()
+{
+	std::cout << "------- constructor -----" << std::endl;
+	X x1;
+	X* x2 = new X();
+	std::cout << "------- destructor 1 -----" << std::endl;
+	test1(x1, x2);
+	std::cout << "------- destructor 2 -----" << std::endl;
+}
