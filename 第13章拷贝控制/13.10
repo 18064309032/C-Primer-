@@ -1,0 +1,2 @@
+当一个StrBlob销毁时shared_ptr中的引用会减少，
+当一个StrBlobPtr销毁时不影响引用计数
