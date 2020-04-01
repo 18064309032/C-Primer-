@@ -1,0 +1,18 @@
+#include <string>
+
+class Employee
+{
+private:
+	std::string m_name;
+	static unsigned int m_number;
+	int m_id;
+public:
+	Employee() = default;
+	Employee(const std::string& name) :m_name(name)
+	{
+		m_id=++m_number;
+	}
+	const int getId()const { return m_id; }
+};
+unsigned int Employee::m_number = 0;
+
