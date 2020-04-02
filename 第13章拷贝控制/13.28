@@ -1,0 +1,64 @@
+#include <string>
+
+class TreeNode
+{
+private:
+	std::string value;
+	int* count;
+	TreeNode* left;
+	TreeNode* right;
+public:
+	TreeNode()
+		:value(std::string()), count(new int(1)), left(nullptr), right(nullptr) {}
+	TreeNode(const TreeNode& tn)
+		:value(tn.value), count(tn.count), left(tn.left), right(tn.right)
+	{
+		++*count;
+	}
+	TreeNode& operator=(const TreeNode& hp)
+	{
+		++*hp.count;
+		if (-- * count == 0)
+		{
+			if (left)
+				delete left;
+			if (right)
+				delete right;
+			delete count;
+		}
+		value = hp.value;
+		count = hp.count;
+		left = hp.left;
+		right = hp.right;
+	}
+	~TreeNode()
+	{
+		if (-- * count == 0)
+		{
+			if (left)
+				delete left;
+			if (right)
+				delete right;
+			delete count;
+			count = nullptr;
+			left = nullptr;
+			count = nullptr;
+		}
+	}
+};
+
+class BinStrTree
+{
+private:
+	TreeNode* root;
+public:
+	BinStrTree() :root(new TreeNode) {}
+	BinStrTree(const BinStrTree& bst) :root(new TreeNode(*bst.root)) {}
+	BinStrTree& operator=(const BinStrTree& bst)
+	{
+		delete root;
+		root = new TreeNode(*bst.root);
+		return *this;
+	}
+	~BinStrTree() { delete root; }
+};
