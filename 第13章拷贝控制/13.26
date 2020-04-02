@@ -1,0 +1,47 @@
+#include <string>
+#include <memory>
+#include <vector>
+#include <stdexcept>
+class StrBlob
+{
+private:
+	std::shared_ptr<std::vector<std::string>> m_data;
+private:
+	void check(std::vector<std::string>::size_type i, const std::string& msg)
+	{
+		if (i >= m_data->size())
+			throw std::out_of_range(msg);
+	}
+public:
+	StrBlob() :m_data(std::make_shared<std::vector<std::string>>()) {}
+	StrBlob(std::initializer_list<std::string> str)
+		:m_data(std::make_shared<std::vector<std::string>>(str)) {}
+	StrBlob(const StrBlob& sb) 
+		:m_data(std::make_shared<std::vector<std::string>>(*sb.m_data)) {}
+	StrBlob& operator=(const StrBlob& sb)
+	{
+		m_data = std::make_shared<std::vector<std::string>>(*sb.m_data);
+		return *this;
+	}
+	void push_back(const std::string& str)
+	{
+		m_data->push_back(str);
+	}
+	void pop_back()
+	{
+		check(0, "没有可弹出元素");
+		m_data->pop_back();
+	}
+	std::string& front()
+	{ 
+		check(0, "容器中没有元素");
+		return m_data->front();
+	}
+	std::string& back()
+	{
+		check(0, "容器中没有元素");
+		return m_data->back();
+	}
+	std::size_t size()const { return m_data->size(); }
+	bool empty()const { return m_data->empty(); }
+};
