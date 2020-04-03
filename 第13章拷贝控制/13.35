@@ -1,0 +1,6 @@
+//如果Message使用合成拷贝构造函数，那么所有的消息不同步
+//没有把msg广播给所有fodler
+Message::Message(const Message& msg):m_folder(msg.m_folder),m_msg(msg.m_msg)
+{
+	add_to_folder(msg);
+}
