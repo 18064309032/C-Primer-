@@ -1,0 +1,13 @@
+
+void addFldr(Folder*);
+void remFldr(Folder*);
+
+void Message::addFldr(Folder* folder)
+{
+	m_folder.insert(folder);
+}
+
+void Message::remFldr(Folder* folder)
+{
+	m_folder.erase(folder);
+}
