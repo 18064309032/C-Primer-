@@ -1,0 +1,183 @@
+
+//message.h
+#ifndef MESSAGE_H
+#define MESSAGE_H
+#include <string>
+#include <set>
+class Folder;
+class Message
+{
+private:
+	friend class Folder;
+
+private:
+	friend void swap(Message&, Message&);
+	friend void swap(Folder&, Folder&);
+private:
+	std::string m_msg;
+	std::set<Folder*> m_folder;
+public:
+	explicit Message(const std::string& str = "") :m_msg(str) {}
+	Message(const Message&);
+	Message& operator=(const Message&);
+	~Message();
+
+	void save(Folder&);
+	void remove(Folder&);
+
+	void addFldr(Folder*);
+	void remFldr(Folder*);
+
+private:
+	void add_to_folder(const Message&);
+	void remove_from_folder();
+};
+void swap(Message&, Message&);
+class Folder
+{
+private:
+	friend class Message;
+private:
+	friend void swap(Message&, Message&);
+	friend void swap(Folder&, Folder&);
+
+private:
+	std::set<Message*> m_msg;
+public:
+	Folder() = default;
+	Folder(const Folder&);
+	Folder& operator=(const Folder&);
+	~Folder();
+private:
+	void add_to_message(const Folder&);
+	void remove_from_message();
+	void add_message(Message*);
+	void rem_message(Message*);
+};
+void swap(Folder&, Folder&);
+#endif
+
+
+
+//message.cpp
+#include "message.h"
+
+explicit Message::Message(const std::string& str = "") :m_msg(str) {}
+Message::Message(const Message& msg):m_folder(msg.m_folder),m_msg(msg.m_msg)
+{
+	add_to_folder(msg);
+}
+Message& Message::operator=(const Message& msg)
+{
+	remove_from_folder();
+	m_folder = msg.m_folder;
+	m_msg = msg.m_msg;
+	add_to_folder(msg);
+	return *this;
+}
+
+Message::~Message()
+{
+	remove_from_folder();
+}
+
+void Message::save(Folder& folder)
+{
+	m_folder.insert(&folder);
+	folder.add_message(this);
+}
+void Message::remove(Folder& folder)
+{
+	m_folder.erase(&folder);
+	folder.rem_message(this);
+}
+
+void Message::add_to_folder(const Message& msg)
+{
+	for (auto m : msg.m_folder)
+		m->add_message(this);
+}
+
+void Message::remove_from_folder()
+{
+	for (auto m : m_folder)
+		m->rem_message(this);
+	m_folder.clear();
+}
+
+void Message::addFldr(Folder* folder)
+{
+	m_folder.insert(folder);
+}
+
+void Message::remFldr(Folder* folder)
+{
+	m_folder.erase(folder);
+}
+
+void swap(Message& first, Message& last)
+{
+	for (auto f : first.m_folder)
+		f->rem_message(&first);
+	for (auto l : last.m_folder)
+		l->rem_message(&last);
+	std::swap(first.m_folder, last.m_folder);
+	std::swap(first.m_msg, last.m_msg);
+	for (auto f : first.m_folder)
+		f->add_message(&first);
+	for (auto l : last.m_folder)
+		l->add_message(&last);
+}
+
+Folder::Folder(const Folder& folder):m_msg(folder.m_msg)
+{
+	add_to_message(folder);
+}
+
+Folder& Folder::operator=(const Folder& folder)
+{
+	remove_from_message();
+	m_msg = folder.m_msg;
+	add_to_message(folder);
+	return *this;
+}
+
+Folder::~Folder()
+{
+	remove_from_message();
+}
+
+void Folder::add_to_message(const Folder& folder)
+{
+	for (auto f : folder.m_msg)
+		f->addFldr(this);
+}
+
+void Folder::remove_from_message()
+{
+	for (auto m : m_msg)
+		m->remFldr(this);
+}
+
+void Folder::add_message(Message* msg)
+{
+	m_msg.insert(msg);
+}
+
+void Folder::rem_message(Message* msg)
+{
+	m_msg.erase(msg);
+}
+
+void swap(Folder& first,Folder& last)
+{
+	for (auto f : first.m_msg)
+		f->remFldr(&first);
+	for (auto l : last.m_msg)
+		l->remFldr(&last);
+	std::swap(first.m_msg, last.m_msg);
+	for (auto f : first.m_msg)
+		f->addFldr(&first);
+	for (auto l : last.m_msg)
+		l->addFldr(&last);
+}
