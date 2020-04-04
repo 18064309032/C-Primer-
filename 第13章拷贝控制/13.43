@@ -1,0 +1,4 @@
+strvec::~strvec()
+{
+	std::for_each(element, first_free, [this](std::string& str) {alloc.destroy(&str); });
+}
