@@ -1,0 +1,133 @@
+//strvec.h
+#pragma once
+#include <string>
+#include <atlalloc.h>
+#include <initializer_list>
+class strvec
+{
+private:
+	std::string* element;
+	std::string* first_free;
+	std::string* cap;
+	std::allocator<std::string> alloc;
+public:
+	strvec();
+	strvec(std::initializer_list<std::string>&);
+	strvec(const std::string&);
+	strvec(const strvec&);
+	strvec& operator=(const strvec&);
+	void push_back(const std::string&);
+	std::size_t size()const;
+	std::size_t capacity()const;
+	std::string* begin()const;
+	std::string* end()const;
+	const char* c_str()const;
+	~strvec();
+
+private:
+	std::pair<std::string*, std::string*>
+		alloc_n_copy(const std::string*, const std::string*);
+	void range_initialize(const std::string*, const std::string*);
+	void chk_n_alloc();
+	void reallocate();
+	void free();
+};
+
+
+//strvec.cpp
+
+#include "strvec.h"
+
+strvec::strvec() :
+	element(nullptr), first_free(nullptr), cap(nullptr) {}
+
+strvec::strvec(std::initializer_list<std::string>& str)
+{
+	range_initialize(str.begin(), str.end());
+}
+
+std::size_t strvec::size()const { return first_free - element; }
+std::size_t strvec::capacity()const { return cap - element; }
+std::string* strvec::begin()const { return element; }
+std::string* strvec::end()const { return first_free; }
+
+std::pair<std::string*, std::string*> strvec::alloc_n_copy(const std::string* first, const std::string* last)
+{
+	auto newdata = alloc.allocate(last - first);
+	return { newdata,std::uninitialized_copy(first,last,newdata) };
+}
+
+void strvec::range_initialize(const std::string* first, const std::string* last)
+{
+	auto newdata = alloc_n_copy(first, last);
+	element = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+strvec::strvec(const std::string& str)
+{
+	push_back(str);
+}
+
+const char* strvec::c_str()const
+{
+	return element->c_str();
+}
+
+strvec::strvec(const strvec& sv)
+{
+	auto newdata = alloc_n_copy(sv.begin(), sv.end());
+	element = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+strvec& strvec::operator=(const strvec& sv)
+{
+	free();
+	auto newdata = alloc_n_copy(sv.begin(), sv.end());
+	element = newdata.first;
+	first_free = newdata.second;
+	return *this;
+}
+
+
+void strvec::reallocate()
+{
+	auto newcapacity = size() ? 2 * size() : 1;
+	auto newdata = alloc.allocate(newcapacity);
+	auto dest = newdata;
+	auto elem = element;
+	for (auto i = 0; i != size(); ++i)
+		alloc.construct(dest++, std::move(elem++));
+	free();
+	element = newdata;
+	first_free = dest;
+	cap = element + newcapacity;
+}
+
+void strvec::chk_n_alloc()
+{
+	if (size() == capacity())
+		reallocate();
+}
+
+void strvec::push_back(const std::string& str)
+{
+	chk_n_alloc();
+	alloc.construct(first_free++, str);
+}
+
+strvec::~strvec()
+{
+	free();
+}
+
+void strvec::free()
+{
+	if (element)
+	{
+		for (auto i = first_free; i != element;)
+			alloc.destroy(--i);
+		alloc.deallocate(element, cap - element);
+	}
+}
