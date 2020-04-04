@@ -1,0 +1,101 @@
+//TextQuery.h
+#pragma once
+#include "strvec.h"
+#include <set>
+#include <memory>
+#include <map>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+class QueryResult;
+class TextQuery
+{
+private:
+	friend class QueryResult;
+
+private:
+	std::shared_ptr<strvec> m_file;
+	std::map<std::string, std::shared_ptr<std::set<std::size_t>>> m_dictionary;
+public:
+	TextQuery(std::ifstream&);
+	QueryResult query(const std::string)const;
+};
+
+class QueryResult
+{
+private:
+	friend std::ostream& print(std::ostream&, const QueryResult&);
+private:
+	std::shared_ptr<strvec> m_file;
+	std::shared_ptr<std::set<std::size_t>> m_line;
+	std::string m_sought;
+public:
+	QueryResult(std::shared_ptr<strvec>, std::shared_ptr<std::set<std::size_t>>,const std::string&);
+};
+
+//TextQuery.cpp
+
+#include "TextQuery.h"
+TextQuery::TextQuery(std::ifstream& ifs) :m_file(new strvec())
+{
+	std::string text;
+	while (std::getline(ifs, text))
+	{
+		m_file->push_back(text);
+		int line = m_file->size() - 1;
+		std::istringstream stream(text);
+		std::string word;
+		while (stream >> word)
+		{
+			auto& lines = m_dictionary[word];
+			if (!lines)
+				lines.reset(new std::set<std::size_t>);
+			lines->insert(line);
+		}
+	}
+}
+
+QueryResult TextQuery::query(const std::string str)const
+{
+	static std::shared_ptr<std::set<std::size_t>>
+		nodata(new std::set<std::size_t>);
+	auto word = m_dictionary.find(str);
+	if (word == m_dictionary.end())
+		return QueryResult(m_file, nodata, str);
+	else
+		return QueryResult(m_file, word->second, str);
+}
+
+QueryResult::QueryResult(std::shared_ptr<strvec> file, std::shared_ptr<std::set<std::size_t>>line, const std::string& sought)
+	:m_file(file), m_line(line), m_sought(sought) {}
+
+std::ostream& print(std::ostream& os, const QueryResult& qr)
+{
+	os << qr.m_line->size() << "次" << std::endl;
+	for (auto q : *qr.m_line)
+		std::cout << q + 1 << *(qr.m_file->begin() + q) << std::endl;
+	return os;
+}
+
+
+
+//main.cpp
+#include "TextQuery.h"
+void runQueries(std::ifstream& ifs)
+{
+	TextQuery tq(ifs);
+	while (true)
+	{
+		std::string sought;
+		if (!(std::cin >> sought))break;
+		print(std::cout, tq.query(sought));
+	}
+}
+int main()
+{
+	std::ifstream ifs("D:\\文档.txt");
+	runQueries(ifs);
+	return 0;
+}
+
+
