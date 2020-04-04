@@ -1,0 +1,6 @@
+strvec::strvec(std::initializer_list<std::string>& str)
+{
+	auto newdata = alloc_n_copy(str.begin(), str.end());
+	element = newdata.first;
+	first_free = cap = newdata.second;
+}
