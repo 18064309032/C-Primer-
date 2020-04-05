@@ -1,0 +1,501 @@
+//wstring.h
+
+#include <memory>
+#include <algorithm>
+#include <initializer_list>
+#include <iostream>
+class wstring
+{
+private:
+	char* elements;
+	char* first_free;
+	char* cap;
+	std::allocator<char> alloc;
+public:
+	wstring() :wstring("") {}
+	wstring(const wstring&);
+	wstring(const char*);
+	wstring(wstring&&)noexcept;
+	wstring& operator=(const wstring&);
+	wstring& operator=(wstring&&);
+	std::size_t size()const;
+	std::size_t capacity()const;
+	const char* c_str()const;
+	char* begin()const;
+	char* end()const;
+	~wstring();
+private:
+	void free();
+	void chk_n_alloc();
+	void reallocate();
+	std::pair<char*, char*> alloc_n_copy(const char*, const char*);
+};
+
+//wstring.cpp
+
+#include "wstring.h"
+
+
+wstring::wstring(const char* str)
+{
+	char* s = const_cast<char*>(str);
+	while (*s!='\0')
+	{
+		++s;
+	}
+	auto newdata = alloc_n_copy(str, ++s);
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+wstring::wstring(const wstring& str)
+{
+	auto newdata = alloc_n_copy(str.begin(), str.end());
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+	std::cout << "wstring::wstring(const wstring& str)已执行！" << std::endl;
+}
+wstring::wstring(wstring&& str)noexcept :elements(str.elements), first_free(str.first_free), cap(str.cap)
+{
+	str.elements = str.first_free = str.cap = nullptr;
+}
+wstring& wstring::operator=(const wstring& str)
+{
+	auto newdata = alloc_n_copy(str.begin(), str.end());
+	free();
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+	std::cout << "wstring& wstring::operator=(const wstring& str)已执行！" << std::endl;
+	return *this;
+}
+wstring& wstring::operator=(wstring&& str)
+{
+	if (this != &str)
+	{
+		free();
+		elements = str.elements;
+		first_free = str.first_free;
+		cap = str.cap;
+		str.elements = str.first_free = str.cap = nullptr;
+	}
+	return *this;
+}
+
+std::size_t wstring::size()const { return first_free - elements; }
+std::size_t wstring::capacity()const { return cap - elements; }
+const char* wstring::c_str()const { return elements; }
+
+char* wstring::begin()const { return elements; }
+char* wstring::end()const { return first_free; }
+
+
+wstring::~wstring() { free(); }
+
+
+std::pair<char*, char*> wstring::alloc_n_copy(const char* first, const char* last)
+{
+	auto newdata = alloc.allocate(last - first);
+	return { newdata,std::uninitialized_copy(first,last,newdata) };
+}
+
+void wstring::chk_n_alloc()
+{
+	if (size() == capacity())
+		reallocate();
+}
+
+void wstring::reallocate()
+{
+	auto newcapacity = size() ? size() * 2 : 1;
+	auto newdata = alloc.allocate(newcapacity);
+	auto dest = newdata;
+	auto elem = elements;
+	for (auto i = 0; i != size(); ++i)
+		alloc.construct(dest++, std::move(*elem++));
+	free();
+	elements = newdata;
+	first_free = dest;
+	cap = elements + newcapacity;
+}
+
+void wstring::free()
+{
+	if (elements)
+	{
+		for (auto p = first_free; p != elements;)
+			alloc.destroy(--p);
+		alloc.deallocate(elements, cap - elements);
+	}
+}
+
+//strvec.h
+
+#pragma once
+#include <string>
+#include <atlalloc.h>
+#include <initializer_list>
+#include <algorithm>
+class strvec
+{
+private:
+	std::string* element;
+	std::string* first_free;
+	std::string* cap;
+	std::allocator<std::string> alloc;
+public:
+	strvec();
+	strvec(std::initializer_list<std::string>&);
+	strvec(const std::string&);
+	strvec(const strvec&);
+	strvec(strvec&&)noexcept;
+	strvec& operator=(strvec&&);
+	strvec& operator=(const strvec&);
+	void push_back(const std::string&);
+	std::size_t size()const;
+	std::size_t capacity()const;
+	std::string* begin()const;
+	std::string* end()const;
+	//const char* c_str()const;
+	~strvec();
+
+private:
+	std::pair<std::string*, std::string*>
+		alloc_n_copy(const std::string*, const std::string*);
+	void range_initialize(const std::string*, const std::string*);
+	void chk_n_alloc();
+	void reallocate();
+	void free();
+};
+
+//strvec::~strvec()
+//{
+//	std::for_each(element, first_free, [this](std::string& str) {alloc.destroy(&str); });
+//}
+
+//strvec.cpp
+
+#include "strvec.h"
+
+strvec::strvec() :
+	element(nullptr), first_free(nullptr), cap(nullptr) {}
+
+strvec::strvec(std::initializer_list<std::string>& str)
+{
+	range_initialize(str.begin(), str.end());
+}
+
+std::size_t strvec::size()const { return first_free - element; }
+std::size_t strvec::capacity()const { return cap - element; }
+std::string* strvec::begin()const { return element; }
+std::string* strvec::end()const { return first_free; }
+
+std::pair<std::string*, std::string*> strvec::alloc_n_copy(const std::string* first, const std::string* last)
+{
+	auto newdata = alloc.allocate(last - first);
+	return { newdata,std::uninitialized_copy(first,last,newdata) };
+}
+
+void strvec::range_initialize(const std::string* first, const std::string* last)
+{
+	auto newdata = alloc_n_copy(first, last);
+	element = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+strvec::strvec(const std::string& str)
+{
+	push_back(str);
+}
+
+
+
+strvec::strvec(const strvec& sv)
+{
+	auto newdata = alloc_n_copy(sv.begin(), sv.end());
+	element = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+strvec::strvec(strvec&& vcr)noexcept :element(vcr.element), first_free(vcr.first_free), cap(vcr.cap)
+{
+	vcr.element = vcr.first_free = vcr.cap = nullptr;
+}
+
+
+strvec& strvec::operator=(strvec&& vcr)
+{
+	if (this != &vcr)
+	{
+		free();
+		element = vcr.element;
+		first_free = vcr.first_free;
+		cap = vcr.cap;
+		vcr.element = vcr.first_free = vcr.cap = nullptr;
+	}
+	return *this;
+}
+
+strvec& strvec::operator=(const strvec& sv)
+{
+	free();
+	auto newdata = alloc_n_copy(sv.begin(), sv.end());
+	element = newdata.first;
+	first_free = newdata.second;
+	return *this;
+}
+
+
+void strvec::reallocate()
+{
+	auto newcapacity = size() ? 2 * size() : 1;
+	auto newdata = alloc.allocate(newcapacity);
+	auto dest = newdata;
+	auto elem = element;
+	for (auto i = 0; i != size(); ++i)
+		alloc.construct(dest++, std::move(*elem++));
+	free();
+	element = newdata;
+	first_free = dest;
+	cap = element + newcapacity;
+}
+
+void strvec::chk_n_alloc()
+{
+	if (size() == capacity())
+		reallocate();
+}
+
+void strvec::push_back(const std::string& str)
+{
+	chk_n_alloc();
+	alloc.construct(first_free++, str);
+}
+
+strvec::~strvec()
+{
+	free();
+}
+
+void strvec::free()
+{
+	if (element)
+	{
+		for (auto i = first_free; i != element;)
+			alloc.destroy(--i);
+		alloc.deallocate(element, cap - element);
+	}
+}
+
+//message.h
+
+#ifndef MESSAGE_H
+#define MESSAGE_H
+#include <string>
+#include <set>
+class Folder;
+class Message
+{
+private:
+	friend class Folder;
+
+private:
+	friend void swap(Message&, Message&);
+	friend void swap(Folder&, Folder&);
+private:
+	std::string m_msg;
+	std::set<Folder*> m_folder;
+public:
+	explicit Message(const std::string& str);
+	Message(const Message&);
+	Message(Message&&);
+	Message& operator=(Message&&);
+	Message& operator=(const Message&);
+	~Message();
+
+	void save(Folder&);
+	void remove(Folder&);
+
+	void addFldr(Folder*);
+	void remFldr(Folder*);
+
+private:
+	void add_to_folder(const Message&);
+	void remove_from_folder();
+};
+void swap(Message&, Message&);
+class Folder
+{
+private:
+	friend class Message;
+private:
+	friend void swap(Message&, Message&);
+	friend void swap(Folder&, Folder&);
+
+private:
+	std::set<Message*> m_msg;
+public:
+	Folder() = default;
+	Folder(const Folder&);
+	Folder& operator=(const Folder&);
+	~Folder();
+private:
+	void add_to_message(const Folder&);
+	void remove_from_message();
+	void add_message(Message*);
+	void rem_message(Message*);
+};
+void swap(Folder&, Folder&);
+#endif
+
+//message.cpp
+
+#include "message.h"
+
+Message::Message(const std::string& str = "") :m_msg(str) {}
+Message::Message(const Message& msg):m_folder(msg.m_folder),m_msg(msg.m_msg)
+{
+	add_to_folder(msg);
+}
+
+Message::Message(Message&& msg):m_msg(msg.m_msg)
+{
+	m_folder = std::move(msg.m_folder);
+	for (auto f : m_folder)
+	{
+		f->rem_message(&msg);
+		f->add_message(this);
+	}
+	msg.m_folder.clear();
+}
+
+Message& Message::operator=(Message&& msg)
+{
+	if (this != &msg)
+	{
+		remove_from_folder();
+		m_folder = std::move(msg.m_folder);
+		m_msg = std::move(msg.m_msg);
+		for (auto f : m_folder)
+		{
+			f->rem_message(&msg);
+			f->add_message(this);
+		}
+		msg.m_folder.clear();
+	}
+	return *this;
+}
+
+Message& Message::operator=(const Message& msg)
+{
+	remove_from_folder();
+	m_folder = msg.m_folder;
+	m_msg = msg.m_msg;
+	add_to_folder(msg);
+	return *this;
+}
+
+Message::~Message()
+{
+	remove_from_folder();
+}
+
+void Message::save(Folder& folder)
+{
+	m_folder.insert(&folder);
+	folder.add_message(this);
+}
+void Message::remove(Folder& folder)
+{
+	m_folder.erase(&folder);
+	folder.rem_message(this);
+}
+
+void Message::add_to_folder(const Message& msg)
+{
+	for (auto m : msg.m_folder)
+		m->add_message(this);
+}
+
+void Message::remove_from_folder()
+{
+	for (auto m : m_folder)
+		m->rem_message(this);
+	m_folder.clear();
+}
+
+void Message::addFldr(Folder* folder)
+{
+	m_folder.insert(folder);
+}
+
+void Message::remFldr(Folder* folder)
+{
+	m_folder.erase(folder);
+}
+
+void swap(Message& first, Message& last)
+{
+	for (auto f : first.m_folder)
+		f->rem_message(&first);
+	for (auto l : last.m_folder)
+		l->rem_message(&last);
+	std::swap(first.m_folder, last.m_folder);
+	std::swap(first.m_msg, last.m_msg);
+	for (auto f : first.m_folder)
+		f->add_message(&first);
+	for (auto l : last.m_folder)
+		l->add_message(&last);
+}
+
+Folder::Folder(const Folder& folder):m_msg(folder.m_msg)
+{
+	add_to_message(folder);
+}
+
+Folder& Folder::operator=(const Folder& folder)
+{
+	remove_from_message();
+	m_msg = folder.m_msg;
+	add_to_message(folder);
+	return *this;
+}
+
+Folder::~Folder()
+{
+	remove_from_message();
+}
+
+void Folder::add_to_message(const Folder& folder)
+{
+	for (auto f : folder.m_msg)
+		f->addFldr(this);
+}
+
+void Folder::remove_from_message()
+{
+	for (auto m : m_msg)
+		m->remFldr(this);
+}
+
+void Folder::add_message(Message* msg)
+{
+	m_msg.insert(msg);
+}
+
+void Folder::rem_message(Message* msg)
+{
+	m_msg.erase(msg);
+}
+
+void swap(Folder& first,Folder& last)
+{
+	for (auto f : first.m_msg)
+		f->remFldr(&first);
+	for (auto l : last.m_msg)
+		l->remFldr(&last);
+	std::swap(first.m_msg, last.m_msg);
+	for (auto f : first.m_msg)
+		f->addFldr(&first);
+	for (auto l : last.m_msg)
+		l->addFldr(&last);
+}
