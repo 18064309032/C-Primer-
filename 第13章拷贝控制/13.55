@@ -1,0 +1,62 @@
+//StrBlob.h
+
+#ifndef STRBLOB_H
+#define STRBLOB_H
+#include <vector>
+#include <string>
+#include <memory>
+#include <stdexcept>
+#include <initializer_list>
+class StrBlob;
+class StrBlob
+{
+private:
+	std::shared_ptr<std::vector<std::string>> m_data;
+public:
+	typedef std::vector<std::string>::size_type size_type;
+private:
+	void check(std::size_t sz, const std::string&)const;
+public:
+	StrBlob();
+	StrBlob(std::initializer_list<std::string>);
+	std::vector<std::string>::size_type size()const;
+	bool empty()const;
+	void push_back(const std::string&);
+	void push_back(std::string&&);
+	void pop_back();
+	std::string& front();
+	std::string& back();
+	std::string& front()const;
+	std::string& back()const;
+};
+
+#endif
+
+//StrBlob.cpp
+
+#include "StrBlob.h"
+StrBlob::StrBlob() :m_data(std::make_shared<std::vector<std::string>>()) {}
+
+StrBlob::StrBlob(std::initializer_list<std::string> il) :m_data(std::make_shared<std::vector<std::string>>(il)) {}
+
+std::vector<std::string>::size_type StrBlob::size()const { return m_data->size(); }
+
+bool StrBlob::empty()const { return m_data->empty(); }
+
+void StrBlob::push_back(const std::string& word) { m_data->push_back(word); }
+void StrBlob::push_back(std::string&& word) { m_data->push_back(std::move(word)); }
+void StrBlob::pop_back() { m_data->pop_back(); }
+
+std::string& StrBlob::front() { return m_data->front(); }
+
+std::string& StrBlob::back() { return m_data->back(); }
+
+std::string& StrBlob::front()const { return m_data->front(); }
+
+std::string& StrBlob::back()const { return m_data->back(); }
+
+void StrBlob::check(std::size_t sz, const std::string& msg)const
+{
+	if (sz > m_data->size())
+		throw std::out_of_range(msg);
+}
