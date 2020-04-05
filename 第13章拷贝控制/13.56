@@ -1,0 +1,8 @@
+//会产生递归并且最终溢出。
+
+Foo Foo::sorted()const&
+{
+        Foo ret(*this);
+                return ret.sorted();
+}
+//由于返回ret.sorted(),导致不停地调用sorted(),产生递归，栈溢出
