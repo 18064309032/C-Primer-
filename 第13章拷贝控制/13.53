@@ -1,0 +1,37 @@
+#include <string>
+#include <iostream>
+class HasPtr
+{
+private:
+	std::string* ps;
+	int i;
+private:
+	friend void swap(HasPtr& rhs, HasPtr& lhs)
+	{
+		std::swap(rhs.ps, lhs.ps);
+		std::swap(rhs.i, lhs.i);
+		std::cout << "call swap(HasPtr &rhs)" << std::endl;
+	}
+public:
+	HasPtr(const std::string& s = std::string()) :ps(new std::string(s)), i(0) {}
+	HasPtr(const HasPtr& p) :ps(new std::string(*p.ps)), i(p.i) {}
+	HasPtr(HasPtr&& p)noexcept:ps(p.ps),i(p.i)
+	{
+		p.ps = nullptr;
+		p.i = 0;
+	}
+	HasPtr& operator=(HasPtr&& p)
+	{
+		std::swap(*this, p);
+		return *this;
+	}
+	HasPtr& operator=(const HasPtr& p)
+	{
+		auto newdata = new std::string(*p.ps);
+		delete ps;
+		ps = newdata;
+		i = p.i;
+		return *this;
+	}
+	~HasPtr() { delete ps; }
+};
