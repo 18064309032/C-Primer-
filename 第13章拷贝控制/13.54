@@ -1,0 +1,12 @@
+1>------ 已启动生成: 项目: 练习, 配置: Debug Win32 ------
+1>main.cpp
+1>D:\工程\练习\main.cpp(122,11): error C2593: “operator =”不明确
+1>D:\工程\练习\main.cpp(41,11): message : 可能是“Hasptr1 &Hasptr1::operator =(Hasptr1)”
+1>D:\工程\练习\main.cpp(21,11): message : 或    “Hasptr1 &Hasptr1::operator =(const Hasptr1 &)”
+1>D:\工程\练习\main.cpp(122,11): message : 尝试匹配参数列表“(Hasptr1, Hasptr1)”时
+1>D:\工程\练习\main.cpp(123,22): error C2593: “operator =”不明确
+1>D:\工程\练习\main.cpp(41,11): message : 可能是“Hasptr1 &Hasptr1::operator =(Hasptr1)”
+1>D:\工程\练习\main.cpp(21,11): message : 或    “Hasptr1 &Hasptr1::operator =(const Hasptr1 &)”
+1>D:\工程\练习\main.cpp(123,22): message : 尝试匹配参数列表“(Hasptr1, Hasptr1)”时
+1>已完成生成项目“练习.vcxproj”的操作 - 失败。
+========== 生成: 成功 0 个，失败 1 个，最新 0 个，跳过 0 个 ==========
