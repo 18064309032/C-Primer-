@@ -1,0 +1,108 @@
+//wstring.h
+#include <memory>
+#include <algorithm>
+#include <initializer_list>
+class wstring
+{
+private:
+	char* elements;
+	char* first_free;
+	char* cap;
+	std::allocator<char> alloc;
+public:
+	wstring() :wstring("") {}
+	wstring(const wstring&);
+	wstring(const char*);
+	wstring& operator=(const wstring&);
+	std::size_t size()const;
+	std::size_t capacity()const;
+	const char* c_str()const;
+	char* begin()const;
+	char* end()const;
+	~wstring();
+private:
+	void free();
+	void chk_n_alloc();
+	void reallocate();
+	std::pair<char*, char*> alloc_n_copy(const char*, const char*);
+};
+//wstring.cpp
+
+#include "wstring.h"
+
+
+wstring::wstring(const char* str)
+{
+	char* s = const_cast<char*>(str);
+	while (*s!='\0')
+	{
+		++s;
+	}
+	auto newdata = alloc_n_copy(str, ++s);
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+wstring::wstring(const wstring& str)
+{
+	auto newdata = alloc_n_copy(str.begin(), str.end());
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+wstring& wstring::operator=(const wstring& str)
+{
+	auto newdata = alloc_n_copy(str.begin(), str.end());
+	free();
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+	return *this;
+}
+
+
+std::size_t wstring::size()const { return first_free - elements; }
+std::size_t wstring::capacity()const { return cap - elements; }
+const char* wstring::c_str()const { return elements; }
+
+char* wstring::begin()const { return elements; }
+char* wstring::end()const { return first_free; }
+
+
+wstring::~wstring() { free(); }
+
+
+std::pair<char*, char*> wstring::alloc_n_copy(const char* first, const char* last)
+{
+	auto newdata = alloc.allocate(last - first);
+	return { newdata,std::uninitialized_copy(first,last,newdata) };
+}
+
+void wstring::chk_n_alloc()
+{
+	if (size() == capacity())
+		reallocate();
+}
+
+void wstring::reallocate()
+{
+	auto newcapacity = size() ? size() * 2 : 1;
+	auto newdata = alloc.allocate(newcapacity);
+	auto dest = newdata;
+	auto elem = elements;
+	for (auto i = 0; i != size(); ++i)
+		alloc.construct(dest++, std::move(*elem++));
+	free();
+	elements = newdata;
+	first_free = dest;
+	cap = elements + newcapacity;
+}
+
+void wstring::free()
+{
+	if (elements)
+	{
+		for (auto p = first_free; p != elements;)
+			alloc.destroy(--p);
+		alloc.deallocate(elements, cap - elements);
+	}
+}
