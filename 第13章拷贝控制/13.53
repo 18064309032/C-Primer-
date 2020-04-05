@@ -20,7 +20,7 @@ public:
 		p.ps = nullptr;
 		p.i = 0;
 	}
-	HasPtr& operator=(HasPtr&& p)
+	HasPtr& operator=(HasPtr p)
 	{
 		std::swap(*this, p);
 		return *this;
