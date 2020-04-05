@@ -1,0 +1,43 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+class Foo
+{
+private:
+	std::vector<int> data;
+public:
+	Foo(std::vector<int>& vcr) :data(vcr) {}
+	Foo sorted()&&;
+	Foo sorted()const&;
+	std::vector<int> getData() { return data; }
+};
+
+Foo Foo::sorted()&&
+{
+	std::sort(data.begin(), data.end());
+	std::cout << "Foo Foo::sorted()&&" << std::endl;
+	return *this;
+}
+
+Foo Foo::sorted()const&
+{
+	Foo ret(*this);
+	std::sort(ret.data.begin(), ret.data.end());
+	std::cout << "Foo Foo::sorted()const&" << std::endl;
+	return ret;
+}
+
+int main()
+{
+	std::vector<int> ivec = { 1, 2, 5, 4, 7 };
+	Foo f1(ivec);
+	Foo f2 = Foo(ivec).sorted();
+	Foo f3 = f1.sorted();
+	for (auto i : f2.getData()) {
+		std::cout << i << " ";
+	}
+	std::cout << std::endl;
+
+	return 0;
+}
