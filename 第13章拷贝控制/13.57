@@ -1,0 +1,2 @@
+Foo Foo::sorted()const&{return Foo(*this).sorted();}
+//因为Foo(*this)返回的是一个右值，因此可以调用sorted的右值版本，返回排序后的Foo。
