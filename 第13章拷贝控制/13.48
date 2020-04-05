@@ -1,0 +1,21 @@
+#include "wstring.h"
+#include <vector>
+int main()
+{
+	std::vector<wstring> wvcr;
+	wstring s1("我");
+	wstring s2("在");
+	wstring s3("那");
+	wstring s4("温");
+	wstring s5;
+	wstring s6("暖");
+	s5 = s6;
+	wvcr.push_back(s1);
+	wvcr.push_back(s2);
+	wvcr.push_back(s3);
+	wvcr.push_back(s4);
+	wvcr.push_back(s5);
+	for (auto w : wvcr)
+		std::cout << w.c_str() << std::endl;
+	return 0;
+}
