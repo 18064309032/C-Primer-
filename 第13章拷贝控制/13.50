@@ -1,0 +1,56 @@
+#include "wstring.h"
+#include <vector>
+void foo(wstring x)
+{
+}
+
+void bar(const wstring& x)
+{
+}
+
+wstring baz()
+{
+    wstring ret("world");
+    return ret;
+}
+
+int main()
+{
+    wstring s0;
+    wstring s1("hello");
+    wstring s2(s0);
+    wstring s3 = s1;
+    s2 = s1;
+
+    std::cout << "1 ---------- " << std::endl;
+    foo(s1);
+    bar(s1);
+    foo("temporary");
+    bar("temporary");
+    wstring s4 = baz();
+
+    std::vector<wstring> svec;
+    std::cout << "2 ---------- " << std::endl;
+
+    svec.push_back(s0);
+    svec.push_back(s1);
+    std::cout << "3 ---------- " << std::endl;
+    svec.push_back(baz());
+    svec.push_back("good job");
+    return 0;
+}
+
+
+wstring::wstring(const wstring& str)已执行！
+wstring::wstring(const wstring& str)已执行！
+wstring& wstring::operator=(const wstring& str)已执行！
+1 ----------
+wstring::wstring(const wstring & str)已执行！
+2 ----------
+wstring::wstring(const wstring & str)已执行！
+wstring::wstring(const wstring & str)已执行！
+3 ----------
+
+
+要在调试停止时自动关闭控制台，请启用“工具”->“选项”->“调试”->“调试停止时自动关闭控制台”。
+按任意键关闭此窗口. . .
