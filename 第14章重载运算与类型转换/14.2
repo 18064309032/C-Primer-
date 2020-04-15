@@ -1,0 +1,77 @@
+//14.2
+#include <iostream>
+#include <string>
+
+class Sales_data
+{
+private:
+	std::string bookNo;//书的编号
+	unsigned int sold_uint;//出售数量
+	double revenue;//总价格
+public:
+	Sales_data() :Sales_data("", 0, 0.0f) {}//默认构造函数
+	Sales_data(const std::string& b) :Sales_data(b, 0, 0.0f) {}//构造函数
+	Sales_data(const std::string& b, unsigned int s, double r)//委托构造函数
+		:bookNo(b), sold_uint(s), revenue(r) {}
+	Sales_data(std::istream&);//构造函数
+	Sales_data operator+=(const Sales_data&);//+=成员运算符
+	Sales_data operator+(const Sales_data&);//加号成员运算符
+	std::string isbn()const { return bookNo; }//获取书的编号
+private:
+	friend std::ostream& operator<<(std::ostream&, const Sales_data&);//重载输出运算符
+	friend std::istream& operator>>(std::istream&, Sales_data&);//重载输入运算符
+	friend Sales_data operator+(const Sales_data&, const Sales_data&);//重载加号运算符
+private:
+	//单价计算
+	inline
+	double avgPrice()const { return sold_uint ? revenue / sold_uint : 0; }
+};
+
+
+Sales_data::Sales_data(std::istream& is)
+{
+	Sales_data value;
+	std::cin >> value;
+}
+
+std::ostream& operator<<(std::ostream& os, const Sales_data& sd)
+{
+	os << sd.isbn() << sd.sold_uint <<
+		sd.revenue << sd.avgPrice() << std::endl;
+	return os;
+}
+std::istream& operator>>(std::istream& is, Sales_data& sd)
+{
+	double price;
+	is >> sd.bookNo >> sd.sold_uint >> price;
+	if (is)
+		sd.revenue = sd.sold_uint * price;
+	else
+		sd = Sales_data();
+	return is;
+}
+
+Sales_data Sales_data::operator+(const Sales_data& sd)
+{
+	revenue += sd.revenue;
+	sold_uint += sd.sold_uint;
+	return *this;
+}
+
+Sales_data operator+(const Sales_data& first, const Sales_data& last)
+{
+	return first + last;
+}
+
+Sales_data Sales_data::operator+=(const Sales_data& sd)
+{
+	return *this + sd;
+}
+
+int main()
+{
+	Sales_data sd;
+	std::cin >> sd;
+	std::cout << sd;
+	return 0;
+}
