@@ -1,0 +1,8 @@
+
+friend std::ostream& operator<<(std::ostream&,const Book&);
+std::ostream& operator<<(std::ostream& os, const Book& book)
+{
+	os << book.m_no << book.m_name 
+		<< book.m_author << book.m_pubdate << std::endl;
+	return os;
+}
