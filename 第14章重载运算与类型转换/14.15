@@ -1,0 +1,103 @@
+//Book.h
+#pragma once
+#ifndef BOOK_H
+#define BOOK_H
+#include <iostream>
+#include <string>
+class Book
+{
+	friend std::istream& operator>>(std::istream&, Book&);
+	friend std::ostream& operator<<(std::ostream&, const Book&);
+	friend bool operator==(const Book&, const Book&);
+	friend bool operator!=(const Book&, const Book&);
+	friend bool operator<(const Book&, const Book&);
+	friend bool operator>(const Book&, const Book&);
+	friend Book operator+(const Book&, const Book&);
+
+public:
+	Book();
+	Book(unsigned , std::string , std::string , std::string , unsigned );
+	Book(std::istream&);
+
+	Book& operator+=(const Book&);
+
+private:
+	unsigned m_no;
+	std::string m_name;
+	std::string m_author;
+	std::string m_pubdate;
+	unsigned m_number;
+};
+
+std::istream& operator>>(std::istream&, Book&);
+std::ostream& operator<<(std::ostream&, const Book&);
+bool operator==(const Book&, const Book&);
+bool operator!=(const Book&, const Book&);
+bool operator<(const Book&, const Book&);
+bool operator>(const Book&, const Book&);
+Book operator+(const Book&, const Book&);
+
+#endif
+
+//book.cpp
+
+#include "Book.h"
+
+Book::Book() = default;
+Book::Book(unsigned no, std::string name, std::string author, std::string pubdate, unsigned number)
+	:m_no(no), m_name(name), m_author(author), m_pubdate(pubdate), m_number(number) {}
+Book::Book(std::istream & in) { in >> *this; }
+
+Book& Book::operator+=(const Book& book)
+{
+	if (book == *this)
+		m_number += book.m_number;
+	return *this;
+}
+
+std::istream& operator>>(std::istream& is, Book& book)
+{
+	is >> book.m_no >> book.m_name >> book.m_author
+		>> book.m_pubdate >> book.m_number;
+	return is;
+}
+std::ostream& operator<<(std::ostream& os, const Book& book)
+{
+	os << book.m_no << " " << book.m_name << " " << book.m_author
+		<< " " << book.m_pubdate << " " << book.m_number;
+	return os;
+}
+bool operator==(const Book& first, const Book& last)
+{
+	return first.m_no == last.m_no;
+}
+bool operator!=(const Book& first, const Book& last)
+{
+	return !(first == last);
+}
+bool operator<(const Book& first, const Book& last)
+{
+	return first.m_no < last.m_no;
+}
+bool operator>(const Book& first, const Book& last)
+{
+	return !(first < last);
+}
+Book operator+(const Book& first, const Book& last)
+{
+	Book ret(first);
+	ret += last;
+	return ret;
+}
+
+//main.cpp
+#include "Book.h"
+
+int main()
+{
+	Book book1(1567, "高尔基", "海燕", "2014", 4);
+	Book book2(1882, "朱自清", "背影", "2014", 6);
+
+	std::cout << book1 + book2 << std::endl;
+	return 0;
+}
