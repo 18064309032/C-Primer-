@@ -1,0 +1,13 @@
+
+friend std::istream& operator>>(std::istream&, const Sales_data&);
+
+std::istream& operator>>(std::istream& is, const Sales_data sd)
+{
+	double price;
+	is >> sd.m_bookNo >> sd.m_unitsSold >> price;
+	if (is)
+		sd.m_revenue = sd.m_unitsSold * price;
+	else
+		sd = Sales_data();
+	return is;
+}
