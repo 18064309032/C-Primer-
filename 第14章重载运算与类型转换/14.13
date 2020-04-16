@@ -1,0 +1,15 @@
+//应该支持-、-=运算符
+friend Sales_data operator-(const Sales_data&, const Sales_data&);
+Sales_data operator-(const Sales_data& first, const Sales_data& last)
+{
+	Sales_data ret = first;
+	ret -= last;
+	return ret;
+}
+
+Sales_data& Sales_data::operator-=(const Sales_data& sd)
+{
+	this->units_sold -= sd.units_sold;
+	this->revenue -= sd.revenue;
+	return *this;
+}
