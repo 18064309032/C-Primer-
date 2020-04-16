@@ -1,0 +1,8 @@
+friend std::ostream& operator<<(std::ostream&,const Sales_data&);
+
+std::ostream& operator<<(std::ostream& os, const Sales_data& sd)
+{
+	os << sd.isbn() << sd.sold_uint <<
+		sd.revenue << sd.avgPrice() << std::endl;
+	return os;
+}
