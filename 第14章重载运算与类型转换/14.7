@@ -1,0 +1,134 @@
+#pragma once
+#ifndef STRING_H
+#define STRING_H
+//String.h
+#include <iostream>
+#include <memory>
+class String
+{
+private:
+	char* elements;
+	char* end;
+	std::allocator<char> alloc;
+private:
+	friend std::ostream& operator<<(std::ostream&, const String&);
+public:
+	String();
+	String(const char*);
+	String(const String&);
+	String& operator=(const String&);
+	const char* c_str()const;
+	std::size_t size()const;
+	std::size_t length()const;
+	~String();
+private:
+	std::pair<char*, char*> alloc_n_copy(const char*, const char*);
+	void range_initializer(const char*, const char*);
+	void free();
+};
+std::ostream& operator<<(std::ostream&, const String&);
+#endif
+
+
+
+//String.cpp
+#include "String.h"
+
+String::String() :String("") {}
+
+String::String(const String& str)
+{
+	range_initializer(str.elements, str.end);
+	std::cout << "调用拷贝构造函数" << std::endl;
+}
+
+String::String(const char* str)
+{
+	char* s = const_cast<char*>(str);
+	while (*s)
+	{
+		++s;
+	}
+	range_initializer(str, ++s);
+}
+
+
+String& String::operator=(const String& str)
+{
+	if (this != &str)
+	{
+		auto newdata = alloc_n_copy(str.elements, str.end);
+		free();
+		elements = newdata.first;
+		end = newdata.second;
+	}
+	return *this;
+}
+
+const char* String::c_str()const
+{
+	return elements;
+}
+
+std::size_t String::size()const
+{
+	return end - elements; 
+}
+std::size_t String::length()const
+{ 
+	return end - elements - 1; 
+}
+
+String::~String()
+{
+	free();
+}
+
+std::pair<char*, char*> String::alloc_n_copy(const char* first, const char* last)
+{
+	auto newdata = alloc.allocate(last - first);
+	return { newdata,std::uninitialized_copy(first,last,newdata) };
+}
+
+void String::range_initializer(const char* first, const char* last)
+{
+	auto newdata = alloc_n_copy(first, last);
+	elements = newdata.first;
+	end = newdata.second;
+}
+
+void String::free()
+{
+	if (elements)
+	{
+		for (auto i = end; i != elements;)
+		{
+			alloc.destroy(--i);
+		}
+		//std::for_each(elements, end, [this](char& c) {alloc.destroy(&c); });
+		alloc.deallocate(elements, end - elements);
+	}
+}
+
+std::ostream& operator<<(std::ostream& os, const String& str)
+{
+	char* str_s = const_cast<char*>(str.c_str());
+	while (*str_s)
+	{
+		os << *str_s++;
+	}
+	return os;
+}
+
+//main.cpp
+
+#include "String.h"
+
+int main()
+{
+	String str("你很有趣！");
+	String str2(str);
+	std::cout << str << str2;
+	std::cout << str.length();
+	return 0;
+}
