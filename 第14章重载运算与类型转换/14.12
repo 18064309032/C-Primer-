@@ -1,0 +1,10 @@
+friend std::istream& operator>>(std::istream& , Book& )
+std::istream& operator>>(std::istream& is, Book& book)
+{
+	is >> book.no >> book.name >> book.author >> book.pudate;
+	if (is)
+		std::cout << "已输入" << std::endl;
+	else
+		book = Book();
+	return is;
+}
