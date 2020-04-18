@@ -1,0 +1,198 @@
+
+//StrVec.h
+
+#pragma once
+#ifndef STRVEC_H
+#define STRVEC_H
+#include <memory>
+#include <string>
+#include <initializer_list>
+#include <algorithm>
+class StrVec
+{
+private:
+	std::string* elements;
+	std::string* first_free;
+	std::string* cap;
+	std::allocator<std::string> alloc;
+private://友元函数(运算符重载)
+	friend bool operator==(const StrVec&, const StrVec&);
+	friend bool operator!=(const StrVec&, const StrVec&);
+	friend bool operator>(const StrVec&, const StrVec&);
+	friend bool operator<(const StrVec&, const StrVec&);
+public:
+	StrVec();
+	StrVec(std::initializer_list<std::string>);
+	StrVec(const StrVec&);
+	~StrVec();
+	std::string* begin();
+	std::string* begin()const;
+	std::string* end();
+	std::string* end()const;
+	std::size_t size()const;
+	std::size_t capacity()const;
+	void push_back(const std::string&);
+	void pop_back();
+	bool empty()const;	
+	void reserve(std::size_t);
+	void resize(std::size_t);
+	void resize(size_t, const std::string&);
+private://工具函数
+	//内存分配
+	std::pair<std::string*, std::string*> alloc_n_copy(const std::string*, const std::string*);
+	void reallocate();
+	void chk_n_alloc();
+	void range_initialize(const std::string* first, const std::string* last);
+	void alloc_n_move(std::size_t new_cap);
+	//释放内存
+	void free();
+};
+
+bool operator==(const StrVec&, const StrVec&);
+bool operator!=(const StrVec&, const StrVec&);
+bool operator>(const StrVec&, const StrVec&);
+bool operator<(const StrVec&, const StrVec&);
+
+#endif
+
+
+//StrVec.cpp
+
+#include "StrVec.h"
+
+StrVec::StrVec() :elements(nullptr), first_free(nullptr), cap(nullptr) {}
+
+StrVec::StrVec(std::initializer_list<std::string> str)
+{
+	range_initialize(str.begin(), str.end());
+}
+
+StrVec::StrVec(const StrVec& sv)
+{
+	auto newdata=alloc_n_copy(sv.begin(), sv.end());
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+}
+StrVec::~StrVec() { free(); }
+std::string* StrVec::begin() { return elements; }
+std::string* StrVec::begin()const { return elements; }
+std::string* StrVec::end() { return first_free; }
+std::string* StrVec::end()const { return first_free; }
+std::size_t StrVec::size()const { return first_free - elements; }
+std::size_t StrVec::capacity()const { return cap - elements; }
+bool StrVec::empty()const { return size() == 0; }
+
+void StrVec::push_back(const std::string& str)
+{
+	chk_n_alloc();
+	alloc.construct(first_free++, str);
+}
+void StrVec::pop_back(){}//待维护
+
+void StrVec::reserve(std::size_t new_cap)
+{
+	if (new_cap <= capacity())return;
+	alloc_n_move(new_cap);
+}
+
+void StrVec::resize(std::size_t count)
+{
+	resize(count, std::string());
+}
+void StrVec::resize(std::size_t count, const std::string& s)
+{
+	if (count > size())
+	{
+		if (count > capacity())reserve(count * 2);
+		for (std::size_t i = size(); i != count; ++i)
+			alloc.construct(first_free++, s);
+	}
+	else if (count < size())
+	{
+		while (first_free != elements + count)
+			alloc.destroy(--first_free);
+	}
+}
+
+std::pair<std::string*, std::string*> StrVec
+	::alloc_n_copy(const std::string* first, const std::string* last)
+{
+	auto newdata = alloc.allocate(last - first);
+	return std::make_pair(newdata, std::uninitialized_copy(first, last, newdata));
+}
+
+void StrVec::range_initialize(const std::string* first, const std::string* last)
+{
+	auto newdata = alloc_n_copy(first, last);
+	elements = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+void StrVec::reallocate()
+{
+	auto newdata = size() ? 2 * size() : 1;
+	alloc_n_move(newdata);
+}
+
+void StrVec::chk_n_alloc()
+{
+	if (size() == capacity())
+		reallocate();
+}
+
+void StrVec::alloc_n_move(std::size_t new_cap)
+{
+	auto newdata = alloc.allocate(new_cap);
+	auto dest = newdata;
+	auto elem = elements;
+	for (std::size_t i = 0; i != size(); ++i)
+		alloc.construct(dest++, std::move(*elem++));
+	free();
+	elements = newdata;
+	first_free  = dest;
+	cap = elements + new_cap;
+}
+
+void StrVec::free()
+{
+	if (elements)
+	{
+		for (auto p = first_free; p != elements;)
+			alloc.destroy(--p);
+		alloc.deallocate(elements, cap - elements);
+	}
+}
+
+bool operator==(const StrVec& first, const StrVec& last)
+{
+	if (first.size() != last.size())
+	{
+		return false;
+	}
+	else
+	{
+		auto l_iter = first.begin();
+		auto r_iter = last.begin();
+		for (l_iter, r_iter; l_iter != first.end(); ++l_iter, ++r_iter)
+		{
+			if (*l_iter != *r_iter)
+				return false;
+		}
+	}
+	return true;
+}
+bool operator!=(const StrVec& first, const StrVec& last)
+{
+	return !(first == last);
+}
+
+bool operator>(const StrVec& first, const StrVec& last)
+{
+	return std::lexicographical_compare
+	(first.begin(), first.end(), last.begin(), last.end());
+}
+
+bool operator<(const StrVec& first, const StrVec& last)
+{
+	return !(first > last);
+}
