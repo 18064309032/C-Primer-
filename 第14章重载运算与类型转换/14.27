@@ -1,5 +1,3 @@
-//StrBlobPtr.h
-
 #pragma once
 #ifndef STRBLOBPTR_H
 #define STRBLOBPTR_H
@@ -26,6 +24,9 @@ public:
 	StrBlobPtr(StrBlob&, std::size_t);
 	std::string& operator[](std::size_t);
 	StrBlobPtr& operator++();
+	StrBlobPtr& operator++(int);
+	StrBlobPtr& operator--();
+	StrBlobPtr& operator--(int);
 	std::string& deref()const;
 private:
 	std::shared_ptr<std::vector<std::string>> check(std::size_t, const std::string&)const;
@@ -55,6 +56,25 @@ StrBlobPtr& StrBlobPtr::operator++()
 	check(m_curr, "递增超过范围");
 	++m_curr;
 	return *this;
+}
+
+StrBlobPtr& StrBlobPtr::operator++(int)
+{
+	StrBlobPtr ret = *this;
+	++(*this);
+	return ret;
+}
+StrBlobPtr& StrBlobPtr::operator--()
+{
+	check(m_curr, "递减超出范围");
+	--m_curr;
+	return *this;
+}
+StrBlobPtr& StrBlobPtr::operator--(int)
+{
+	StrBlobPtr ret = *this;
+	--(*this);
+	return ret;
 }
 
 std::string& StrBlobPtr::deref()const
