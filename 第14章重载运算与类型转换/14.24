@@ -1,0 +1,392 @@
+//Date.h
+
+#ifndef DATE_H
+#define DATE_H
+
+#ifndef _MSC_VER
+#define NOEXCEPT noexcept
+#else
+#define NOEXCEPT
+#endif
+
+#include <iostream>
+#include <vector>
+
+class Date
+{
+	friend  bool            operator ==(const Date& lhs, const Date& rhs);
+	friend  bool            operator < (const Date &lhs, const Date &rhs);
+	friend  bool            check(const Date &d);
+	friend  std::ostream&   operator <<(std::ostream& os, const Date& d);
+public:
+	typedef std::size_t Size;
+
+	// default constructor
+	Date() = default;
+	// constructor taking Size as days
+	explicit Date(Size days);
+	// constructor taking three Size
+	Date(Size d, Size m, Size y) : day(d), month(m), year(y) {}
+	// constructor taking iostream
+	Date(std::istream &is, std::ostream &os);
+
+	// copy constructor
+	Date(const Date& d);
+	// move constructor
+	Date(Date&& d) NOEXCEPT;
+
+	// copy operator=
+	Date& operator= (const Date& d);
+	// move operator=
+	Date& operator= (Date&& rhs) NOEXCEPT;
+
+	// destructor  --  in this case, user-defined destructor is not nessary.
+	~Date() { std::cout << "destroying\n"; }
+
+	// members
+	Size toDays() const;  //not implemented yet.
+	Date& operator +=(Size offset);
+	Date& operator -=(Size offset);
+
+
+private:
+	Size    day = 1;
+	Size    month = 1;
+	Size    year = 0;
+};
+
+static const Date::Size YtoD_400 = 146097;    //365*400 + 400/4 -3 == 146097
+static const Date::Size YtoD_100 = 36524;    //365*100 + 100/4 -1 ==  36524
+static const Date::Size YtoD_4 = 1461;    //365*4 + 1          ==   1461
+static const Date::Size YtoD_1 = 365;    //365
+
+// normal year
+static const std::vector<Date::Size> monthsVec_n =
+{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+// leap year
+static const std::vector<Date::Size> monthsVec_l =
+{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+// non-member operators:  <<  >>  -   ==  !=  <   <=  >   >=
+//
+std::ostream&
+operator <<(std::ostream& os, const Date& d);
+std::istream&
+operator >>(std::istream& is, Date& d);
+int
+operator - (const Date& lhs, const Date& rhs);
+bool
+operator ==(const Date& lhs, const Date& rhs);
+bool
+operator !=(const Date& lhs, const Date& rhs);
+bool
+operator < (const Date& lhs, const Date& rhs);
+bool
+operator <=(const Date& lhs, const Date& rhs);
+bool
+operator  >(const Date& lhs, const Date& rhs);
+bool
+operator >=(const Date& lhs, const Date& rhs);
+Date
+operator - (const Date& lhs, Date::Size  rhs);
+Date
+operator  +(const Date& lhs, Date::Size  rhs);
+
+
+
+//  utillities:
+bool check(const Date &d);
+inline bool
+isLeapYear(Date::Size y);
+
+
+
+
+// check if the date object passed in is valid
+inline bool
+check(const Date &d)
+{
+	if (d.month == 0 || d.month >12)
+		return false;
+	else
+	{
+		//    month == 1 3 5 7 8 10 12
+		if (d.month == 1 || d.month == 3 || d.month == 5 || d.month == 7 ||
+			d.month == 8 || d.month == 10 || d.month == 12)
+		{
+			if (d.day == 0 || d.day > 31) return false;
+			else
+				return true;
+		}
+		else
+		{
+			//    month == 4 6 9 11
+			if (d.month == 4 || d.month == 6 || d.month == 9 || d.month == 11)
+			{
+				if (d.day == 0 || d.day > 30) return false;
+				else
+					return true;
+			}
+			else
+			{
+				//    month == 2
+				if (isLeapYear(d.year))
+				{
+					if (d.day == 0 || d.day >29)  return false;
+					else
+						return true;
+				}
+				else
+				{
+					if (d.day == 0 || d.day >28)  return false;
+					else
+						return true;
+				}
+			}
+		}
+	}
+}
+
+inline bool
+isLeapYear(Date::Size y)
+{
+	if (!(y % 400))
+	{
+		return true;
+	}
+	else
+	{
+		if (!(y % 100))
+		{
+			return false;
+		}
+		else
+			return !(y % 4);
+	}
+}
+#endif 
+
+//Date.cpp
+
+#include <algorithm>
+#include "Date.h"
+
+// constructor taking Size as days
+// the argument must be within (0, 2^32)
+Date::Date(Size days)
+{
+	// calculate the year
+	Size y400 = days / YtoD_400;
+	Size y100 = (days - y400*YtoD_400) / YtoD_100;
+	Size y4 = (days - y400*YtoD_400 - y100*YtoD_100) / YtoD_4;
+	Size y = (days - y400*YtoD_400 - y100*YtoD_100 - y4*YtoD_4) / 365;
+	Size d = days - y400*YtoD_400 - y100*YtoD_100 - y4*YtoD_4 - y * 365;
+	this->year = y400 * 400 + y100 * 100 + y4 * 4 + y;
+
+	// check if leap and choose the months vector accordingly
+	std::vector<Size>currYear
+		= isLeapYear(this->year) ? monthsVec_l : monthsVec_n;
+
+	// calculate day and month using find_if + lambda
+	Size D_accumu = 0, M_accumu = 0;
+	// @bug    fixed:  the variabbles above hade been declared inside the find_if as static
+	//                 which caused the bug. It works fine now after being move outside.
+
+	std::find_if(currYear.cbegin(), currYear.cend(), [&](Size m)
+	{
+
+		D_accumu += m;
+		M_accumu++;
+
+		if (d < D_accumu)
+		{
+			this->month = M_accumu;
+			this->day = d + m - D_accumu;
+
+			return true;
+		}
+		else
+			return false;
+	});
+}
+
+// construcotr taking iostream
+Date::Date(std::istream &is, std::ostream &os)
+{
+	is >> day >> month >> year;
+
+	if (is)
+	{
+		if (check(*this)) return;
+		else
+		{
+			os << "Invalid input! Object is default initialized.";
+			*this = Date();
+		}
+	}
+	else
+	{
+		os << "Invalid input! Object is default initialized.";
+		*this = Date();
+	}
+
+}
+
+// copy constructor
+Date::Date(const Date &d) :
+day(d.day), month(d.month), year(d.year)
+{}
+
+// move constructor
+Date::Date(Date&& d) NOEXCEPT :
+day(d.day), month(d.month), year(d.year)
+{ std::cout << "copy moving"; }
+
+// copy operator=
+Date &Date::operator= (const Date &d)
+{
+	this->day = d.day;
+	this->month = d.month;
+	this->year = d.year;
+
+	return *this;
+}
+
+// move operator=
+Date &Date::operator =(Date&& rhs) NOEXCEPT
+{
+	if (this != &rhs)
+	{
+		this->day = rhs.day;
+		this->month = rhs.month;
+		this->year = rhs.year;
+	}
+	std::cout << "moving =";
+
+	return *this;
+}
+
+// conver to days
+Date::Size Date::toDays() const
+{
+	Size result = this->day;
+
+	// check if leap and choose the months vector accordingly
+	std::vector<Size>currYear
+		= isLeapYear(this->year) ? monthsVec_l : monthsVec_n;
+
+	// calculate result + days by months
+	for (auto it = currYear.cbegin(); it != currYear.cbegin() + this->month - 1; ++it)
+		result += *it;
+
+	// calculate result + days by years
+	result += (this->year / 400)      * YtoD_400;
+	result += (this->year % 400 / 100)  * YtoD_100;
+	result += (this->year % 100 / 4)    * YtoD_4;
+	result += (this->year % 4)        * YtoD_1;
+
+	return result;
+}
+
+// member operators:   +=  -=
+
+Date &Date::operator +=(Date::Size offset)
+{
+	*this = Date(this->toDays() + offset);
+	return *this;
+}
+
+Date &Date::operator -=(Date::Size offset)
+{
+	if (this->toDays() > offset)
+		*this = Date(this->toDays() - offset);
+	else
+		*this = Date();
+
+	return *this;
+}
+
+// non-member operators:  <<  >>  -   ==  !=  <   <=  >   >=
+
+std::ostream&
+operator <<(std::ostream& os, const Date& d)
+{
+	os << d.day << " " << d.month << " " << d.year;
+	return os;
+}
+
+std::istream&
+operator >>(std::istream& is, Date& d)
+{
+	if (is)
+	{
+		Date input = Date(is, std::cout);
+		if (check(input))    d = input;
+	}
+	return is;
+}
+
+
+int operator -(const Date &lhs, const Date &rhs)
+{
+	return lhs.toDays() - rhs.toDays();
+}
+
+
+bool operator ==(const Date &lhs, const Date &rhs)
+{
+	return (lhs.day == rhs.day) &&
+		(lhs.month == rhs.month) &&
+		(lhs.year == rhs.year);
+}
+
+
+bool operator !=(const Date &lhs, const Date &rhs)
+{
+	return !(lhs == rhs);
+}
+
+
+bool operator < (const Date &lhs, const Date &rhs)
+{
+	return lhs.toDays() < rhs.toDays();
+}
+
+
+bool operator <=(const Date &lhs, const Date &rhs)
+{
+	return (lhs < rhs) || (lhs == rhs);
+}
+
+
+bool operator >(const Date &lhs, const Date &rhs)
+{
+	return !(lhs <= rhs);
+}
+
+
+bool operator >=(const Date &lhs, const Date &rhs)
+{
+	return !(lhs < rhs);
+}
+
+
+Date operator - (const Date &lhs, Date::Size rhs)
+{                                       //  ^^^ rhs must not be larger than 2^32-1
+	// copy lhs
+	Date result(lhs);
+	result -= rhs;
+
+	return result;
+}
+
+
+Date operator + (const Date &lhs, Date::Size rhs)
+{                                       //  ^^^ rhs must not be larger than 2^32-1
+	// copy lhs
+	Date result(lhs);
+	result += rhs;
+
+	return result;
+}
