@@ -1,0 +1,43 @@
+    friend bool operator==(const Date&, const Date&);//等于
+	friend bool operator!=(const Date&, const Date&);//不等于
+	friend bool operator>(const Date&, const Date&);//大于
+	friend bool operator>=(const Date&, const Date&);//大于等于
+	friend bool operator<(const Date&, const Date&);//小于
+	friend bool operator<=(const Date&, const Date&);//小于等于
+
+    bool operator ==(const Date& lhs, const Date& rhs)
+{
+	return (lhs.day == rhs.day) &&
+		(lhs.month == rhs.month) &&
+		(lhs.year == rhs.year);
+}
+
+
+bool operator !=(const Date& lhs, const Date& rhs)
+{
+	return !(lhs == rhs);
+}
+
+
+bool operator < (const Date& lhs, const Date& rhs)
+{
+	return lhs.toDays() < rhs.toDays();
+}
+
+
+bool operator <=(const Date& lhs, const Date& rhs)
+{
+	return (lhs < rhs) || (lhs == rhs);
+}
+
+
+bool operator >(const Date& lhs, const Date& rhs)
+{
+	return !(lhs <= rhs);
+}
+
+
+bool operator >=(const Date& lhs, const Date& rhs)
+{
+	return !(lhs < rhs);
+}
