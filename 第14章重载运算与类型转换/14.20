@@ -1,0 +1,20 @@
+	
+friend Sales_data operator+(const Sales_data& first,const Sales_data& last);
+
+ Sales_data operator+(const Sales_data& first, const Sales_data& last)
+{
+	Sales_data sd = first;
+	sd += last;
+	return sd;
+}
+    
+    
+Sales_data& operator+=(const Sales_data&);
+
+ Sales_data& Sales_data::operator+=(const Sales_data& sd)
+{
+	m_revenue += sd.m_revenue;
+	m_unitsSold += sd.m_unitsSold;
+	return *this;
+}
+
