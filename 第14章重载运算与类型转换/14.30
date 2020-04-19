@@ -1,0 +1,157 @@
+//StrBlobPtr.h
+
+#pragma once
+#ifndef STRBLOBPTR_H
+#define STRBLOBPTR_H
+#include <memory>
+#include <stdexcept>
+#include <algorithm>
+#include <vector>
+#include <string>
+#include "StrBlob.h"
+class StrBlobPtr
+{
+private:
+	friend class StrBlob;
+private:
+	friend bool operator==(const StrBlobPtr&, const StrBlobPtr&);
+	friend bool operator!=(const StrBlobPtr&, const StrBlobPtr&);
+	friend bool operator>(const StrBlobPtr&, const StrBlobPtr&);
+	friend bool operator<(const StrBlobPtr&, const StrBlobPtr&);
+private:
+	std::size_t m_curr;
+	std::weak_ptr<std::vector<std::string>> m_wptr;
+public:
+	StrBlobPtr();
+	StrBlobPtr(StrBlob&, std::size_t);
+	std::string& operator[](std::size_t);
+	StrBlobPtr& operator++();
+	StrBlobPtr& operator++(int);
+	StrBlobPtr& operator--();
+	StrBlobPtr& operator--(int);
+	StrBlobPtr operator+(std::size_t);
+	StrBlobPtr& operator+=(std::size_t);
+	StrBlobPtr operator-(std::size_t);
+	StrBlobPtr& operator-=(std::size_t);
+	std::string* operator->();
+	std::string& operator*();
+	std::string& deref()const;
+private:
+	std::shared_ptr<std::vector<std::string>> check(std::size_t, const std::string&)const;
+};
+bool operator==(const StrBlobPtr&, const StrBlobPtr&);
+bool operator!=(const StrBlobPtr&, const StrBlobPtr&);
+bool operator>(const StrBlobPtr&, const StrBlobPtr&);
+bool operator<(const StrBlobPtr&, const StrBlobPtr&);
+
+#endif
+
+//StrBlobPtr.cpp
+
+#include "StrBlobPtr.h"
+
+StrBlobPtr::StrBlobPtr() :m_curr(0) {}
+
+StrBlobPtr::StrBlobPtr(StrBlob& sb, std::size_t sz) : m_wptr(sb.m_data), m_curr(sz) {}
+
+std::string& StrBlobPtr::operator[](std::size_t n)
+{
+	return (*m_wptr.lock())[n];
+}
+
+StrBlobPtr& StrBlobPtr::operator++()
+{
+	check(m_curr, "递增超过范围");
+	++m_curr;
+	return *this;
+}
+
+StrBlobPtr& StrBlobPtr::operator++(int)
+{
+	StrBlobPtr ret = *this;
+	++(*this);
+	return ret;
+}
+StrBlobPtr& StrBlobPtr::operator--()
+{
+	check(m_curr, "递减超出范围");
+	--m_curr;
+	return *this;
+}
+StrBlobPtr& StrBlobPtr::operator--(int)
+{
+	StrBlobPtr ret = *this;
+	--(*this);
+	return ret;
+}
+
+StrBlobPtr StrBlobPtr::operator+(std::size_t n)
+{
+	StrBlobPtr ret = *this;
+	m_curr += n;
+	return ret;
+}
+StrBlobPtr& StrBlobPtr::operator+=(std::size_t n)
+{
+	m_curr += n;
+	check(m_curr, "超出范围");
+	return *this;
+}
+StrBlobPtr StrBlobPtr::operator-(std::size_t n)
+{
+	StrBlobPtr ret = *this;
+	m_curr -= n;
+	return ret;
+}
+StrBlobPtr& StrBlobPtr::operator-=(std::size_t n)
+{
+	m_curr -= n;
+	check(m_curr, "超出范围");
+	return *this;
+}
+
+std::string& StrBlobPtr::deref()const
+{
+	auto p = StrBlobPtr::check(m_curr, "未找到需要的数据");
+	return (*p)[m_curr];
+}
+
+std::shared_ptr<std::vector<std::string>> StrBlobPtr::check(std::size_t sz, const std::string& msg)const
+{
+	auto ret = m_wptr.lock();
+	if (!ret)
+		throw std::runtime_error("错误");
+	if (sz > ret->size())
+		throw std::out_of_range(msg);
+	return ret;
+}
+
+bool operator==(const StrBlobPtr& first, const StrBlobPtr& last)
+{
+	return first.m_curr == last.m_curr;
+}
+bool operator!=(const StrBlobPtr& first, const StrBlobPtr& last)
+{
+	return !(first == last);
+}
+
+bool operator>(const StrBlobPtr& first, const StrBlobPtr& last)
+{
+	return first.m_curr > last.m_curr;
+}
+
+bool operator<(const StrBlobPtr& first, const StrBlobPtr& last)
+{
+	return !(first > last);
+}
+
+std::string* StrBlobPtr::operator->()
+{
+	auto p = check(m_curr, "超出范围");
+	return &(this->operator*());
+}
+std::string& StrBlobPtr::operator*()
+{
+	auto p = check(m_curr, "超出范围");
+	return (*p)[m_curr];
+}
