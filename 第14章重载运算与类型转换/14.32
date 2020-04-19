@@ -1,0 +1,33 @@
+//ConstStrBlobPtr.h
+
+#pragma once
+#ifndef CONSTSTRBLOBPTR_H
+#define CONSTSTRBLOBPTR_H
+#include <memory>
+#include <vector>
+#include <string>
+#include "StrBlobPtr.h"
+class ConstStrBlobPtr
+{
+private:
+	StrBlobPtr* ptr = nullptr;
+public:
+	ConstStrBlobPtr(StrBlobPtr* p) :ptr(p) {}
+	StrBlobPtr& operator*()const;
+	StrBlobPtr* operator->()const;
+};
+#endif
+
+//ConstStrBlobPtr.cpp
+
+#include "ConstStrBlobPtr.h"
+
+StrBlobPtr& ConstStrBlobPtr::operator*()const
+{
+	return *ptr;
+}
+
+StrBlobPtr* ConstStrBlobPtr::operator->()const
+{
+	return ptr;
+}
