@@ -1,0 +1,24 @@
+#include <iostream>
+#include <string>
+
+class PrintString
+{
+private:
+	std::istream& is;
+public:
+	PrintString(std::istream& i = std::cin) :is(i) {};
+	std::string operator()()const
+	{
+		std::string str;
+		std::getline(is, str);
+		return is ? str : std::string();
+	}
+};
+
+int main()
+{
+	PrintString ps;
+	std::cout << ps() << std::endl;
+	return 0;
+
+}
