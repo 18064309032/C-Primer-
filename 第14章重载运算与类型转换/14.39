@@ -1,0 +1,41 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <map>
+#include <fstream>
+struct IsInRange
+{
+private:
+	std::size_t m_lower;
+	std::size_t m_upper;
+public:
+	IsInRange(std::size_t lower, std::size_t upper)
+		:m_lower(lower), m_upper(upper) {}
+	bool operator()(const std::string& str)const
+	{
+		return str.size() >= m_lower && str.size() < m_upper;
+	}
+	std::size_t lower_limit()const { return m_lower; }
+	std::size_t upper_limit()const { return m_upper; }
+};
+
+int main()
+{
+	std::size_t lower = 1;
+	auto uppers = { 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u };
+	std::vector<IsInRange> prdicates;
+	for (auto upper : uppers)
+		prdicates.push_back(IsInRange{ lower, upper });
+	std::map<std::size_t, std::size_t> count_table;
+	for (auto upper : uppers)
+		count_table[upper] = 0;
+	std::ifstream ifs("D:\\文件.txt");
+	for (std::string word; ifs >> word;)
+		for (auto is_size_in_range : prdicates)
+			if (is_size_in_range(word))
+				++count_table[is_size_in_range.upper_limit()];
+
+	for (auto pair : count_table)
+		std::cout << pair.first << " " << pair.second << std::endl;
+	return 0;
+}
