@@ -1,0 +1,27 @@
+#include <iostream>
+#include <string>
+#include <vector>
+class PrintString
+{
+private:
+	std::istream& is;	
+public:
+	PrintString(std::istream& i = std::cin) :is(i) {};
+	std::string operator()()const
+	{
+		std::string str;
+		std::getline(is, str);
+		return is ? str : std::string();
+	}
+};
+
+int main()
+{
+	std::vector<std::string> vec;
+	PrintString ps;
+	for (std::string tem; !(tem = ps()).empty(); vec.push_back(tem));
+	for (const auto& str : vec)
+		std::cout << str << " ";
+	return 0;
+
+}
