@@ -48,3 +48,43 @@ int main()
 	}
 	return 0;
 }
+
+
+
+#include <iostream>
+#include <string>
+#include <functional>
+#include <algorithm>
+#include <map>
+
+int add(int a, int b) { return a + b; }
+
+auto mod = [](int a, int b) {return a % b; };
+
+struct Div
+{
+	int operator()(int a, int b)const { return a / b; }
+};
+
+
+int main()
+{
+	std::map<char, std::function<int(int, int)>> map
+	{
+		{'+',add},
+		{'-',std::minus<int>()},
+		{'*',[](int a,int b) {return a * b; }},
+		{'/',Div()},
+		{'%',mod}
+	};
+
+	while (std::cout << "请输入:\n")
+	{
+		char oper;
+		int a;
+		int b;
+		std::cin >> oper >> a >> b;
+		std::cout << map[oper](a, b) << std::endl;
+	}
+	return 0;
+}
