@@ -1,0 +1,11 @@
+
+struct Integral
+{   
+    operator const int();
+    operator int()const;
+}
+
+operator const int();
+//意在转换为const int 类型
+operator int()const
+//意在不改变类的成员,将类转换为int类型
