@@ -1,0 +1,2 @@
+explicit operator std::string() { return m_bookNo; }
+explicit operator double() { return m_revenue; }
