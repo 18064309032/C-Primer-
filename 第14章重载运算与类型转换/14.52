@@ -1,0 +1,18 @@
+struct Longdouble {
+	//用于演示的成员operator+;在通常情况下是个非成员
+	LongDouble operator+(const SmallInt&);
+	//其他成员与14.9.2节一致
+};
+LongDouble operator+(LongDouble&, double);
+SmallInt si;
+LongDouble ld;
+ld = si + ld;
+ld = ld + si;
+
+//ld=si+ld;
+//如果使用 LongDouble operator+(const SmallInt&);不合法
+//这样会先将si转换为LongDouble类型，再将ld转换为SmallInt类型
+
+
+//ld=ld+si;合法
+//精确匹配LongDouble operator+(const SmallInt&);
