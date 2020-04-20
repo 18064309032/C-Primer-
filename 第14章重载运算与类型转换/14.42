@@ -1,0 +1,44 @@
+//统计大于1024的值有多少个
+#include <vector>
+#include <iostream>
+#include <functional>
+#include <algorithm>
+int main()
+{
+	std::vector<int> vec{ 1, 11, 112, 1122, 11122 };
+	auto count = std::count_if(vec.begin(), vec.end(), 
+		std::bind(std::greater<int>(), std::placeholders::_1, 1024));
+	std::cout << count << std::endl;
+	return 0;
+}
+
+//找到第一个不等于pooh的字符串
+
+#include <vector>
+#include <iostream>
+#include <functional>
+#include <algorithm>
+int main()
+{
+	std::vector<std::string> vec{"pooch", "apple", "banana", "pooch"};
+	auto count=std::find_if(vec.begin(), vec.end(), 
+		std::bind(std::not_equal_to<std::string>(), std::placeholders::_1, "pooch"));
+	std::cout << *count;
+	return 0;
+}
+
+//将所有的值乘以2
+
+#include <vector>
+#include <iostream>
+#include <functional>
+#include <algorithm>
+int main()
+{
+	std::vector<int> vec{ 1, 11, 112, 1122, 11122 };
+	std::transform(vec.begin(), vec.end(),vec.begin(),
+		std::bind(std::multiplies<int>(), std::placeholders::_1, 2));
+	for (auto v : vec)
+		std::cout << v << " ";
+	return 0;
+}
