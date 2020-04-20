@@ -1,0 +1,50 @@
+#include <iostream>
+#include <string>
+#include <functional>
+#include <algorithm>
+#include <map>
+
+int add_(int a, int b)
+{
+	return a + b;
+}
+int(*add)(int, int) = add_;
+
+int reduce_(int a, int b)
+{
+	return a - b;
+}
+int(*reduce)(int, int) = reduce_;
+
+int ride_(int a, int b)
+{
+	return a * b;
+}
+int(*ride)(int, int) = ride_;
+
+int except_(int a, int b)
+{
+	return a / b;
+}
+int(*except)(int, int) = except;
+
+int main()
+{
+	std::map<char, std::function<int(int, int)>> map
+	{
+		{'+',add},
+		{'-',reduce},
+		{'*',ride},
+		{'/',except}
+	};
+
+	while (std::cout << "请输入:\n")
+	{
+		char oper;
+		int a;
+		int b;
+		std::cin >> oper >> a >> b;
+		std::cout << map[oper](a, b) << std::endl;
+	}
+	return 0;
+}
