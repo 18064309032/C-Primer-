@@ -1,0 +1,1 @@
+explicit operator bool() { return (year < 4000) ? true, false; }
