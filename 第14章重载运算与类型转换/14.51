@@ -1,0 +1,13 @@
+void calc(int);
+void calc(LongDouble);
+double dval;
+calc(dval);  //哪个calc？
+
+//调用 void calc(int);
+//转换的优先级如下：
+
+//精确匹配
+//const 转换。
+//类型提升
+//算术转换
+//类类型转换
