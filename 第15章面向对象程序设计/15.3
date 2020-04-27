@@ -1,0 +1,49 @@
+//Quote.h
+
+#pragma once
+#include <string>
+class Quote
+{
+private:
+	std::string m_book;
+public:
+	Quote(const std::string&, double);
+	std::string isbn()const;
+	virtual double net_price(std::size_t)const;
+	virtual ~Quote();
+protected:
+	double m_price;
+};
+
+//Quote.cpp
+
+#include "Quote.h"
+
+Quote::Quote(const std::string& book, double price) :m_book(book), m_price(price) {}
+
+std::string Quote::isbn()const { return m_book; }
+
+double Quote::net_price(std::size_t n)const { return n * m_price; }
+
+Quote::~Quote() = default;
+
+
+//main.cpp
+
+
+#include <iostream>
+#include "Quote.h"
+
+double print_price(std::ostream& os, const Quote& q, std::size_t n)
+{
+	double ret = q.net_price(n);
+	os << "书的编号:" << q.isbn() << " 书的总价:"<<q.net_price(n) << std::endl;
+	return ret;
+}
+
+int main(int argc, char** argv)
+{
+	Quote q("0x123", 3.3);
+	print_price(std::cout, q, 8);
+	return 0;
+}
