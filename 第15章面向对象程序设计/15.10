@@ -1,0 +1,1 @@
+//read本是std::istream下的函数，但因为ifstream继承自istream，因此也可以使用read函数。
