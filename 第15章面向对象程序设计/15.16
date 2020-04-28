@@ -1,0 +1,13 @@
+#include "Disc_Quote.h"
+class Limit_quote : public Disc_Quote
+{
+public:
+	Limit_quote() = default;
+	Limit_quote(const std::string& b, double p, std::size_t max, double disc) :
+		Disc_Quote(b, p, max, disc) {   }
+
+	double net_price(std::size_t n) const override
+	{
+		return n * m_price * (n < m_quantity ? 1 - m_discount : 1);
+	}
+};
