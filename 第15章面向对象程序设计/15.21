@@ -1,0 +1,41 @@
+class Shape
+{
+public:
+    typedef std::pair<std::string, std::string> coordinate;
+    Shape() = default;
+    virtual double area() const = 0;
+    virtual double perimeter() const = 0;   //ÇóÖÜ³¤
+
+    virtual ~Shape() = default;
+//    virtual ~Shape() throw(){};
+};
+
+class Circle : public Shape
+{
+public:
+    Circle(coordinate c, double r) : center(c), radius(r) {}
+    double area() const override
+    {
+        return 3.14*radius*radius;
+    }
+    double perimeter() const override
+    {
+        return 2*3.14*radius;
+    }
+    ~ Circle() throw(){};
+private:
+    coordinate center;
+protected:
+    double radius;
+};
+
+class Circle_Cone : public Circle
+{
+public:
+    double volume () const
+    {
+        return 3.14*radius*radius*height;
+    }
+private:
+    double height;
+};
