@@ -1,0 +1,34 @@
+//Bulk_Quote.h
+
+#pragma once
+#include <string>
+#include "Quote.h"
+class Bulk_Quote:public Quote
+{
+private:
+	std::size_t m_min_qty = 0;
+	double m_discount;
+public:
+	Bulk_Quote() = default;
+	Bulk_Quote(const std::string&, double, std::size_t, double);
+
+	virtual double net_price(std::size_t)const override;
+
+	virtual ~Bulk_Quote()override = default;
+};
+
+
+//Bulk_Quote.cpp
+
+#include "Bulk_Quote.h"
+
+Bulk_Quote::Bulk_Quote(const std::string& book, double price, std::size_t n, double discount)
+	:Quote(book, price), m_min_qty(n), m_discount(discount) {}
+
+double Bulk_Quote::net_price(std::size_t n)const
+{
+	if (n > m_min_qty)
+		return m_min_qty * m_discount * m_price + (n - m_min_qty) * m_price;
+	else
+		return n * m_price;
+}
