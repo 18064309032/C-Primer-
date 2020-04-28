@@ -1,0 +1,17 @@
+#include <iostream>
+#include "Quote.h"
+#include "Bulk_Quote.h"
+double print_price(std::ostream& os, const Quote& q, std::size_t n)
+{
+	double ret = q.net_price(n);
+	os << "书的编号:" << q.isbn() << " 书的总价:"<<q.net_price(n) << std::endl;
+	return ret;
+}
+
+int main(int argc, char** argv)
+{
+	Quote q("0x123", 3.3);
+	Bulk_Quote q1("0x132", 3.3, 4, 5.0);
+	print_price(std::cout, q1, 8);
+	return 0;
+}
