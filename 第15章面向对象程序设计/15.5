@@ -1,0 +1,51 @@
+//Bulk_Quote.h
+
+#pragma once
+#include <string>
+#include "Quote.h"
+class Bulk_Quote:public Quote
+{
+private:
+	std::size_t m_min_qty = 0;
+	double m_discount;
+public:
+	Bulk_Quote() = default;
+	Bulk_Quote(const std::string&, double, std::size_t, double);
+
+	virtual double net_price(std::size_t)const override;
+
+	virtual ~Bulk_Quote()override = default;
+};
+
+//Bulk_Quote.cpp
+
+#include "Bulk_Quote.h"
+
+Bulk_Quote::Bulk_Quote(const std::string& book, double price, std::size_t n, double discount)
+	:Quote(book, price), m_min_qty(n), m_discount(discount) {}
+
+double Bulk_Quote::net_price(std::size_t n)const
+{
+	return m_min_qty * m_price * m_discount + (n - m_min_qty) * m_price;
+}
+
+//main.cpp
+
+
+#include <iostream>
+#include "Quote.h"
+#include "Bulk_Quote.h"
+double print_price(std::ostream& os, const Quote& q, std::size_t n)
+{
+	double ret = q.net_price(n);
+	os << "书的编号:" << q.isbn() << " 书的总价:"<<q.net_price(n) << std::endl;
+	return ret;
+}
+
+int main(int argc, char** argv)
+{
+	Quote q("0x123", 3.3);
+	Bulk_Quote q1("0x132", 3.3, 4, 5.0);
+	print_price(std::cout, q1, 8);
+	return 0;
+}
