@@ -1,0 +1,3 @@
+//无论D以什么方式继承B，其成员函数和友元都能使用派生类到基类的转换。因此，Pub_Derv, Pro_Derv和Priv_Derv类中都合法。
+//如果D继承B的方式是共有的或受保护的，则D的派生类成员和友元可以使用D向B的类型转换，
+//反之，如果D继承B是私有的，则不能使用，因此，Derived_from_Public和Derived_from_Protected合法，Derived_from_Private不合法。
