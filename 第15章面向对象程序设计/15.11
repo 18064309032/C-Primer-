@@ -1,0 +1,12 @@
+
+virtual void debug()const;
+void Quote::debug()const
+{
+	std::cout << "书名: " << m_book << "单价: " << std::endl;
+}
+
+virtual void debug()const override;
+void Bulk_Quote::debug()const
+{
+	std::cout << m_min_qty << m_discount << std::endl;
+}
