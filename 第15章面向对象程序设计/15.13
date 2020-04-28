@@ -1,0 +1,18 @@
+class base {
+public:
+    string name() { return basename; }
+    virtual void print (ostream& os) { os << basename; }
+private:
+	string basename = "home";    
+};
+
+class derived : public base {
+public: 
+    void print(ostream& os) { print(os); os << " " << i; }
+    // 这里意为重写base类的print函数，并且在其中调用base的print(os)，但是由于没有加::范围限定符，导致
+    // 其调用的还是derived的print函数，造成无限递归。现象是打印完一行home之后就卡住了。
+    // 改为：void print(ostream& os) override{ base::print(os); os << " " << i; }
+    // 加override说明是覆盖基类的虚函数。
+private:
+    int i = 2;
+};
