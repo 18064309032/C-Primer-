@@ -1,0 +1,4 @@
+class Base { ... };
+(a) class Derived : public Derived { ... };	 // 类重复定义，不能自己继承自己
+(b) class Derived : private Base { ... };	 // 这是类的定义，并不是声明
+(c) class Derived : public Base;		     // 类的声明不包含类派生列表
