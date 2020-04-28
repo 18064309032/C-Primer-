@@ -1,0 +1,49 @@
+
+class Base
+{
+private:
+	char priv_mem;
+protected:
+	int port_mem;
+public:
+	void pub_mem();
+	void memfcn(Base& b) {  b = *this; }
+};
+struct Pub_Derv :public Base
+{
+	int f() { return port_mem; }
+	char g() { return priv_mem; }//错误
+
+	void memfcn(Base& b) { b = *this; }
+};
+
+struct Priv_Derv :private Base
+{
+	int f1()const { return port_mem; }
+	void memfcn(Base& b) { b = *this; }
+};
+
+struct Prot_Derv :protected Base
+{
+	int f2() { return port_mem; }
+	void memfcn(Base& b) { b = *this; }
+};
+
+struct Derived_from_Public : public Pub_Derv
+{
+	int f3() { return port_mem; }
+	void memfcn(Base& b) { b = *this; }
+};
+
+struct Derved_from_Private :private Priv_Derv
+{
+	int f4() { return port_mem; }//错误
+	void memfcn(Base& b) { b = *this; }//错误
+
+};
+
+struct Derved_from_Protected :protected Prot_Derv
+{
+	int f5() { return port_mem; }
+	void memfcn(Base& b) { b = *this; }
+};
