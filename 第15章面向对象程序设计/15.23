@@ -1,0 +1,86 @@
+class Shape
+{
+public:
+    typedef std::pair<std::string, std::string> coordinate;
+    Shape() = default;
+    virtual double area() const = 0;
+    virtual double perimeter() const = 0;   //ÇóÖÜ³¤
+
+    virtual ~Shape() = default;
+//    virtual ~Shape() throw(){};
+};
+
+class Circle : public Shape
+{
+public:
+    Circle(coordinate c, double r) : center(c), radius(r) {}
+    double area() const override
+    {
+        return 3.14*radius*radius;
+    }
+    double perimeter() const override
+    {
+        return 2*3.14*radius;
+    }
+    ~ Circle() throw(){};
+private:
+    coordinate center;
+protected:
+    double radius;
+};
+
+class Circle_Cone : public Circle
+{
+public:
+    double volume () const
+    {
+        return 3.14*radius*radius*height;
+    }
+private:
+    double height;
+};
+​ 15.23 假设第520页的D1类需要覆盖它继承而来的fcn函数，你应该如何对其进行修改？如果你修改了之后fcn匹配了Base中的定义，则该节的那些调用语句应如何解析？
+
+#include <iostream>
+using namespace std;
+
+class Base
+{
+public:
+    virtual int fcn() { cout << "Base::fcn()" << endl; }
+};
+
+class D1 : public Base
+{
+public:
+    int fcn(int);
+    virtual int fcn() override{ cout << "d1::fcn()" << endl; }
+    virtual void f2(){ cout << "d1::f2()" << endl; }
+};
+
+class D2 : public D1
+{
+public:
+    int fcn(int);
+    int fcn() override { cout << "d2::fcn()" << endl; }
+    void f2() override { cout << "d2::f2()" << endl; }
+};
+
+int main()
+{
+    Base bobj;
+    D1 d1obj;
+    D2 d2obj;
+
+    Base *bp1 = &bobj, *bp2 = &d1obj, *bp3 = &d2obj;
+
+    bp1->fcn();		// 虚调用，运行时调用Base::fcn
+    bp2->fcn();		// 虚调用，运行时调用D1::fcn
+    bp3->fcn();		// 虚调用，运行时调用D2::fcn
+
+    D1 *d1p = &d1obj; D2 *d2p = &d2obj;
+//    bp2->f2();		// 错误，Base中没有f2成员。
+    d1p->f2();		    // 虚调用，运行时调用D1::f2()
+    d2p->f2();			// 虚调用，运行时调用D2::f2()
+    return 0;
+}
