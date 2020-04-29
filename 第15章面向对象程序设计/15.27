@@ -1,0 +1,50 @@
+//Bulk_Quote.h
+
+#pragma once
+#include <string>
+#include "Disc_Quote.h"
+class Bulk_Quote:public Disc_Quote
+{
+private:
+	std::size_t m_min_qty = 0;
+	double m_discount;
+public:
+	Bulk_Quote() = default;
+
+	Bulk_Quote(const Bulk_Quote&);
+
+	Bulk_Quote(const std::string&, double, std::size_t, double);
+
+	virtual void debug()const override;
+
+	virtual double net_price(std::size_t)const override;
+
+	virtual ~Bulk_Quote()override = default;
+};
+
+//Bulk_Quote.cpp
+
+#include "Bulk_Quote.h"
+
+Bulk_Quote::Bulk_Quote(const std::string& book, double price, std::size_t n, double discount)
+	:Disc_Quote(book, price, n, discount) {}
+
+Bulk_Quote::Bulk_Quote(const Bulk_Quote& bq) 
+	: Disc_Quote(bq),m_discount(bq.m_discount),m_min_qty(bq.m_min_qty)
+{
+	std::cout << "调用Bulk_Quote::Bulk_Quote(const Bulk_Quote& bq) \
+		: Disc_Quote(bq), m_discount(bq.m_discount), m_min_qty(bq.m_min_qty)" << std::endl;
+}
+
+void Bulk_Quote::debug()const
+{
+	std::cout << m_min_qty << m_discount << std::endl;
+}
+
+double Bulk_Quote::net_price(std::size_t n)const
+{
+	if (n > m_min_qty)
+		return m_min_qty * m_discount * m_price + (n - m_min_qty) * m_price;
+	else
+		return n * m_price;
+}
