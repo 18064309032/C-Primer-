@@ -1,0 +1,19 @@
+#include <vector>
+#include <memory>
+#include "Quote.h"
+#include "Disc_Quote.h"
+#include "Bulk_Quote.h"
+
+int main()
+{
+	std::vector<std::shared_ptr<Quote>> vec;
+	vec.push_back(std::make_shared<Quote>("ISO-1",0.2));
+	vec.push_back(std::make_shared<Quote>("ISO-1", 0.2));
+	vec.push_back(std::make_shared<Quote>("ISO-1", 0.2));
+
+	double total = 0;
+	for (auto v : vec)
+		total += v->net_price(3);
+	std::cout << total << std::endl;
+	return 0;
+}
