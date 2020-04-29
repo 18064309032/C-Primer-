@@ -1,0 +1,19 @@
+#include <vector>
+#include <memory>
+#include "Quote.h"
+#include "Disc_Quote.h"
+#include "Bulk_Quote.h"
+
+int main()
+{
+	std::vector<Quote> vec;
+	vec.push_back(Bulk_Quote("ISO-1", 10, 10, 0.2));
+	vec.push_back(Bulk_Quote("ISO-1", 10, 10, 0.2));
+	vec.push_back(Bulk_Quote("ISO-1", 10, 10, 0.2));
+
+	double total = 0;
+	for (auto b : vec)
+		total += b.net_price(20);
+	std::cout << total << std::endl;
+	return 0;
+}
