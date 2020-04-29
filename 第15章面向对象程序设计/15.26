@@ -1,0 +1,118 @@
+//Quote.h
+
+#pragma once
+#include <iostream>
+#include <string>
+class Quote
+{
+private:
+	std::string m_book;
+public:
+	Quote(const std::string&, double);
+	Quote(const Quote&);
+	std::string isbn()const;
+	virtual void debug()const;
+	virtual double net_price(std::size_t)const;
+	virtual ~Quote();
+protected:
+	double m_price;
+};
+
+//Quote.cpp
+
+#include "Quote.h"
+
+Quote::Quote(const std::string& book, double price) :m_book(book), m_price(price) {}
+
+Quote::Quote(const Quote& q) : m_book(q.m_book), m_price(q.m_price)
+{
+	std::cout << "拷贝构造函数已调用!" << std::endl;
+}
+
+std::string Quote::isbn()const { return m_book; }
+
+void Quote::debug()const
+{
+	std::cout << "书名: " << m_book << "单价: " << std::endl;
+}
+
+double Quote::net_price(std::size_t n)const { return n * m_price; }
+
+Quote::~Quote() = default;
+
+//Disc_Quote.h
+
+#pragma once
+#include "Quote.h"
+class Disc_Quote:public Quote
+{
+protected:
+	std::size_t m_quantity;
+	double m_discount;
+public:
+	Disc_Quote(const std::string&, double, std::size_t, double);
+	Disc_Quote(const Disc_Quote&);
+	virtual double net_price(std::size_t)const override = 0;
+};
+
+//Disc_Quote.cpp
+
+#include "Disc_Quote.h"
+
+Disc_Quote::Disc_Quote(const std::string& book, double price, std::size_t quantity, double discount)
+	:Quote(book, price), m_quantity(quantity), m_discount(discount) {}
+Disc_Quote::Disc_Quote(const Disc_Quote& dq):Quote(dq)
+{
+	std::cout << "调用Disc_Quote::Disc_Quote(const Disc_Quote& dq):Quote(dq)"<<std::endl;
+}
+
+//Bulk_Quote.h
+
+#pragma once
+#include <string>
+#include "Disc_Quote.h"
+class Bulk_Quote:public Disc_Quote
+{
+private:
+	std::size_t m_min_qty = 0;
+	double m_discount;
+public:
+	Bulk_Quote() = default;
+
+	Bulk_Quote(const Bulk_Quote&);
+
+	Bulk_Quote(const std::string&, double, std::size_t, double);
+
+	virtual void debug()const override;
+
+	virtual double net_price(std::size_t)const override;
+
+	virtual ~Bulk_Quote()override = default;
+};
+
+//Bulk_Quote.cpp
+
+#include "Bulk_Quote.h"
+
+Bulk_Quote::Bulk_Quote(const std::string& book, double price, std::size_t n, double discount)
+	:Disc_Quote(book, price, n, discount) {}
+
+Bulk_Quote::Bulk_Quote(const Bulk_Quote& bq) 
+	: Disc_Quote(bq),m_discount(bq.m_discount),m_min_qty(bq.m_min_qty)
+{
+	std::cout << "调用Bulk_Quote::Bulk_Quote(const Bulk_Quote& bq) \
+		: Disc_Quote(bq), m_discount(bq.m_discount), m_min_qty(bq.m_min_qty)" << std::endl;
+}
+
+void Bulk_Quote::debug()const
+{
+	std::cout << m_min_qty << m_discount << std::endl;
+}
+
+double Bulk_Quote::net_price(std::size_t n)const
+{
+	if (n > m_min_qty)
+		return m_min_qty * m_discount * m_price + (n - m_min_qty) * m_price;
+	else
+		return n * m_price;
+}
