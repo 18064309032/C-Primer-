@@ -1,0 +1,58 @@
+//Basket.h
+
+#pragma once
+#include <memory>
+#include <set>
+#include "Quote.h"
+class Basket
+{
+public:
+	void add_item(const std::shared_ptr<Quote>&);
+	double total_receipt(std::ostream&)const;
+private:
+	static bool compare(const std::shared_ptr<Quote>&, const std::shared_ptr<Quote>&);
+	std::multiset<std::shared_ptr<Quote>, decltype(compare)*> items{ compare };
+};
+
+//Basket.cpp
+
+#include "Basket.h"
+
+void Basket::add_item(const std::shared_ptr<Quote>& sales)
+{
+	items.insert(sales);
+}
+double Basket::total_receipt(std::ostream& os)const
+{
+	double sum = 0.0;
+	for (auto iter = items.cbegin(); iter != items.cend();iter=items.upper_bound(*iter))
+	{
+		sum += print_total(os, **iter, items.count(*iter));
+	}
+	os << "Total Sale: " << sum << std::endl;
+	return sum;
+}
+
+bool Basket::compare(const std::shared_ptr<Quote>& left, const std::shared_ptr<Quote>& right)
+{
+	return left->isbn() < right->isbn();
+}
+
+//main.cpp
+
+#include <vector>
+#include <memory>
+#include "Quote.h"
+#include "Bulk_Quote.h"
+#include "Basket.h"
+
+int main()
+{
+	Basket b;
+	b.add_item(std::make_shared<Quote>(Quote("0x123", 2.2)));
+	b.add_item(std::make_shared<Quote>(Quote("0x123", 2.2)));
+	b.add_item(std::make_shared<Quote>(Quote("0x123", 2.2)));
+	b.add_item(std::make_shared<Quote>(Bulk_Quote("0x123", 2.2, 2, 2)));
+	b.total_receipt(std::cout);
+	return 0;
+}
