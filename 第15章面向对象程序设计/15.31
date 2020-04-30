@@ -1,0 +1,6 @@
+Query(s1) | Query(s2) & ~ Query(s3);
+//  WordQuery, NotQuery, AndQuery, OrQuery, Query
+Query(s1) | (Query(s2) & ~ Query(s3));
+// WordQuery, NotQuery, AndQuery, OrQuery, Query
+(Query(s1) | (Query(s2)) | (Query(s3) & Query(s4));
+ // WordQuery, AndQuery, OrQuery, Query
