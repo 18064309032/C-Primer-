@@ -1,0 +1,51 @@
+//Query.h
+
+#pragma once
+#include "Query_Base.h"
+class Query
+{
+private:
+	std::shared_ptr<Query_Base> q;
+private:
+	Query(std::shared_ptr<Query_Base>);
+private:
+	friend Query operator~(const Query&);
+	friend Query operator|(const Query&, const Query&);
+	friend Query operator&(const Query&, const Query&);
+public:
+	Query(const std::string&);
+	std::string rep()const;
+	QueryResult eval(const TextQuery&)const;
+};
+
+//Query.cpp
+
+#include "Query.h"
+
+
+std::string Query::rep()const
+{
+	return q->rep();
+}
+
+//Query_Base.h
+
+#pragma once
+#include "textquery.h"
+#include "QueryResult.h"
+class Query_Base
+{
+private:
+	friend class Query;
+private:
+	virtual QueryResult eval(const TextQuery&)const = 0;
+	virtual std::string rep()const = 0;
+protected:
+	virtual ~Query_Base();
+};
+
+//Query_Base.cpp
+
+#include "Query_Base.h"
+
+Query_Base::~Query_Base() = default;
