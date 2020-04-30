@@ -1,0 +1,18 @@
+a. Query q = Query("firey") & Query("bird") | Query("wind");
+Query::Query(std::string& s) s分别是"firey", "bird", "wind"
+WordQuery::WordQuery(const std::string& s) s分别是"firey", "bird", "wind"
+AndQuery::AndQuery(const Query& left, const Query& right)
+BinaryQuery::BinaryQuery(const Query &l, const Query& r, std::string s)
+Query::Query (std::shared_ptr<Query_base> query) // when call q->eval, q->rep
+OrQuery::OrQuery(const Query& left, const Query& right)
+BinaryQuery::BinaryQuery(const Query &l, const Query& r, std::string s)
+Query::Query (std::shared_ptr<Query_base> query)
+b. cout << q
+在operator<<函数中调用的是Query的rep() ；
+Query中的rep调用OrQuery中继承Query_base的rep，因为生成对象q调用的是”|“运算返回的Query。但OrQuery中没有定义rep，因此调用的是Binary_Query中的rep;
+Binary_Query中的rep由lhs和rhs调用。lhs调用的是AndQuery中的rep，rhs调用的是Word_Query中的rep；
+AndQuery中调用的是Binary_Query中的rep；
+Binary_Query中的rep调用的是Word_Query中的rep。
+c q.eval() 所调用的eval
+Query中的eval调用的是Query_base中的eval。
+但这里Query_base指向的是OrQuery，所以调用的是OrQuery中的eval。
