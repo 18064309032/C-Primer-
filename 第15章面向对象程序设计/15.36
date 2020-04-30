@@ -47,9 +47,9 @@ std::ostream& operator<<(std::ostream&, const Query&);
 
 #include "Query.h"
 
-Query::Query(const std::string& s) :q(new WordQuery(s)) {}
+Query::Query(const std::string& s) :q(new WordQuery(s)) {std::cout<<"Query::Query(const std::string& s)";}
 
-Query::Query(std::shared_ptr<Query_Base> query) : q(query) {}
+Query::Query(std::shared_ptr<Query_Base> query) : q(query) {std::cout<<"Query::Query(std::shared_ptr<Query_Base> query)"<<std::endl;}
 
 std::ostream& operator<<(std::ostream& os, const Query& q)
 {
@@ -63,6 +63,7 @@ QueryResult Query::eval(const TextQuery& t)const
 
 std::string Query::rep()const
 {
+    std::cout<<"std::string Query::rep()const"<<std::endl;
 	return q->rep();
 }
 
@@ -89,9 +90,13 @@ protected:
 #include "BinaryQuery.h"
 
 BinaryQuery::BinaryQuery(const Query& l, const Query& r, std::string oper)
-	:lhs(l), rhs(r), opSym(oper) {}
+	:lhs(l), rhs(r), opSym(oper) {std::cout<<"BinaryQuery::BinaryQuery(const Query& l, const Query& r, std::string oper)"<<std::endl;}
 
-std::string BinaryQuery::rep()const { return "(" + lhs.rep() + " " + opSym + " " + rhs.rep() + ")"; }
+std::string BinaryQuery::rep()const 
+{ 
+    std::cout<<"std::string BinaryQuery::rep()const "<<std::endl;
+    return "(" + lhs.rep() + " " + opSym + " " + rhs.rep() + ")"; 
+}
 
 
 //WordQuery.h
@@ -115,7 +120,7 @@ private:
 
 #include "WordQuery.h"
 
-WordQuery::WordQuery(const std::string& s) :query_word(s) {}
+WordQuery::WordQuery(const std::string& s) :query_word(s) {std::cout<<"WordQuery::WordQuery(const std::string& s) :query_word(s)"<<std::endl;}
 
 QueryResult WordQuery::eval(const TextQuery& t)const
 {
@@ -124,6 +129,7 @@ QueryResult WordQuery::eval(const TextQuery& t)const
 
 std::string WordQuery::rep()const
 {
+    std::cout<<"std::string WordQuery::rep()const"<<std::endl;
 	return query_word;
 }
 
@@ -151,7 +157,7 @@ private:
 
 #include "NotQuery.h"
 
-NotQuery::NotQuery(const Query& q) :query(q) {}
+NotQuery::NotQuery(const Query& q) :query(q) {std::cout<<"NotQuery::NotQuery(const Query& q) :query(q)"<<std::endl;}
 
 Query operator~(const Query& q)
 {
@@ -176,6 +182,7 @@ QueryResult NotQuery::eval(const TextQuery& t)const
 
 std::string NotQuery::rep()const
 {
+    std::cout<<"std::string NotQuery::rep()const"<<std::endl;
 	return "~(" + query.rep() + ")";
 }
 
@@ -199,7 +206,7 @@ private:
 #include "AndQuery.h"
 
 AndQuery::AndQuery(const Query& l, const Query& r)
-	:BinaryQuery(l, r, "&") {}
+	:BinaryQuery(l, r, "&") {std::cout<<"AndQuery::AndQuery(const Query& l, const Query& r)"<<std::endl;}
 
 Query operator&(const Query& l, const Query& r)
 {
@@ -236,7 +243,7 @@ private:
 #include "OrQuery.h"
 
 OrQuery::OrQuery(const Query& l, const Query& r)
-	:BinaryQuery(l, r, "|") {}
+	:BinaryQuery(l, r, "|") {std::cout<<"OrQuery::OrQuery(const Query& l, const Query& r)"<<std::endl;}
 
 Query operator|(const Query& l, const Query& r)
 {
