@@ -1,0 +1,4 @@
+//不会发生什么。
+
+auto ret_line = make_shared<set<line_no>>(left.begin(), left.end());
+//这行代码，make_shared 将会动态分配set，如果返回的是空集，set中就不会插入值。
