@@ -1,0 +1,6 @@
+BinaryQuery a = Query("firey") & Query("bird");
+// 不合法，因为BinaryQuery是一个抽象类
+AndQuery b = Query("firry") & Query("bird");
+// 不合法，因为&操作返回的是Query操作，不能转换为AndQuery
+OrQuery c = Query("firey") & Query("bird");
+// 不合法，同上。
