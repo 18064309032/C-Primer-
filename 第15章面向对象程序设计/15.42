@@ -1,0 +1,319 @@
+//Query_Base.h
+
+#pragma once
+#include "textquery.h"
+#include "QueryResult.h"
+class Query_Base
+{
+private:
+	friend class Query;
+private:
+	virtual QueryResult eval(const TextQuery&)const = 0;
+	virtual std::string rep()const = 0;
+protected:
+	virtual ~Query_Base();
+};
+
+//Query_Base.cpp
+
+#include "Query_Base.h"
+
+Query_Base::~Query_Base() = default;
+
+//Query.h
+
+#pragma once
+#include "Query_Base.h"
+#include "WordQuery.h"
+class Query
+{
+private:
+	std::shared_ptr<Query_Base> q;
+private:
+	Query(std::shared_ptr<Query_Base>);
+private:
+	friend Query operator~(const Query&);
+	friend Query operator|(const Query&, const Query&);
+	friend Query operator&(const Query&, const Query&);
+public:
+	Query(const std::string&);
+	std::string rep()const;
+	QueryResult eval(const TextQuery&)const;
+};
+
+std::ostream& operator<<(std::ostream&, const Query&);
+
+//Query.cpp
+
+#include "Query.h"
+
+Query::Query(const std::string& s) :q(new WordQuery(s)) {std::cout<<"Query::Query(const std::string& s)";}
+
+Query::Query(std::shared_ptr<Query_Base> query) : q(query) {std::cout<<"Query::Query(std::shared_ptr<Query_Base> query)"<<std::endl;}
+
+std::ostream& operator<<(std::ostream& os, const Query& q)
+{
+	return os << q.rep();
+}
+
+QueryResult Query::eval(const TextQuery& t)const
+{
+	return q->eval(t);
+}
+
+std::string Query::rep()const
+{
+    std::cout<<"std::string Query::rep()const"<<std::endl;
+	return q->rep();
+}
+
+//BinaryQuery.h
+
+#pragma once
+#include <algorithm>
+#include <iterator>
+#include "Query_Base.h"
+#include "Query.h"
+class BinaryQuery :public Query_Base
+{
+protected:
+	std::string opSym;
+	Query lhs, rhs;
+protected:
+	BinaryQuery(const Query&, const Query&, std::string);
+
+	virtual std::string rep()const override;
+};
+
+//BinaryQuery.cpp
+
+#include "BinaryQuery.h"
+
+BinaryQuery::BinaryQuery(const Query& l, const Query& r, std::string oper)
+	:lhs(l), rhs(r), opSym(oper) {std::cout<<"BinaryQuery::BinaryQuery(const Query& l, const Query& r, std::string oper)"<<std::endl;}
+
+std::string BinaryQuery::rep()const 
+{ 
+    std::cout<<"std::string BinaryQuery::rep()const "<<std::endl;
+    return "(" + lhs.rep() + " " + opSym + " " + rhs.rep() + ")"; 
+}
+
+
+//WordQuery.h
+
+#pragma once
+#include "Query.h"
+#include "Query_Base.h"
+class WordQuery :public Query_Base
+{
+private:
+	friend class Query;
+private:
+	std::string query_word;
+private:
+	WordQuery(const std::string&);
+	virtual QueryResult eval(const TextQuery&)const override;
+	std::string rep()const;
+};
+
+//WordQuery.cpp
+
+#include "WordQuery.h"
+
+WordQuery::WordQuery(const std::string& s) :query_word(s) {std::cout<<"WordQuery::WordQuery(const std::string& s) :query_word(s)"<<std::endl;}
+
+QueryResult WordQuery::eval(const TextQuery& t)const
+{
+	return t.query(query_word);
+}
+
+std::string WordQuery::rep()const
+{
+    std::cout<<"std::string WordQuery::rep()const"<<std::endl;
+	return query_word;
+}
+
+//NotQuery.h
+
+#pragma once
+#include "Query_Base.h"
+#include "Query.h"
+#include "textquery.h"
+class NotQuery:public Query_Base
+{
+private:
+	friend class Query;
+private:
+	friend Query operator~(const Query&);
+private:
+	Query query;
+private:
+	NotQuery(const Query&);
+	virtual QueryResult eval(const TextQuery&)const override;
+	virtual std::string rep()const override;
+};
+
+//NotQuery.cpp
+
+#include "NotQuery.h"
+
+NotQuery::NotQuery(const Query& q) :query(q) {std::cout<<"NotQuery::NotQuery(const Query& q) :query(q)"<<std::endl;}
+
+Query operator~(const Query& q)
+{
+	return std::shared_ptr<Query_Base>(new NotQuery(q));
+}
+
+QueryResult NotQuery::eval(const TextQuery& t)const
+{
+	auto result = query.eval(t);
+	auto ret_lines = std::shared_ptr<std::set<std::vector<std::string>::size_type>>();
+	auto beg = result.begin(), end = result.end();
+	auto sz = result.get_file()->size();
+	for (std::size_t n = 0; n != sz; ++n)
+	{
+		if (beg == end || *beg != n)
+			ret_lines->insert(n);
+		else if (beg != end)
+			++beg;
+	}
+	return QueryResult(rep(), result.get_file(), ret_lines);
+}
+
+std::string NotQuery::rep()const
+{
+    std::cout<<"std::string NotQuery::rep()const"<<std::endl;
+	return "~(" + query.rep() + ")";
+}
+
+//AndQuery.h
+
+#pragma once
+#include "BinaryQuery.h"
+class AndQuery:public BinaryQuery
+{
+private:
+	friend class Query;
+private:
+	friend Query operator&(const Query&, const Query&);
+private:
+	AndQuery(const Query&, const Query&);
+	virtual QueryResult eval(const TextQuery&)const override;
+};
+
+//AndQuery.cpp
+
+#include "AndQuery.h"
+
+AndQuery::AndQuery(const Query& l, const Query& r)
+	:BinaryQuery(l, r, "&") {std::cout<<"AndQuery::AndQuery(const Query& l, const Query& r)"<<std::endl;}
+
+Query operator&(const Query& l, const Query& r)
+{
+	return std::shared_ptr<Query_Base>(new AndQuery(l, r));
+}
+
+QueryResult AndQuery::eval(const TextQuery& t)const
+{
+	auto left = lhs.eval(t), right = rhs.eval(t);
+	auto ret_lines = std::make_shared<std::set<std::vector<std::string>::size_type>>();
+	std::set_intersection(left.begin(), left.end(), right.begin(), right.end(),\
+		std::inserter(*ret_lines, ret_lines->begin()));
+	return QueryResult(rep(), left.get_file(), ret_lines);
+}
+
+
+//OrQuery.h
+
+#pragma once
+#include "BinaryQuery.h"
+class OrQuery :public BinaryQuery
+{
+private:
+	friend class Query;
+private:
+	friend Query operator|(const Query&, const Query&);
+private:
+	OrQuery(const Query&, const Query&);
+	virtual QueryResult eval(const TextQuery&)const override;
+};
+
+//OrQuery.cpp
+
+#include "OrQuery.h"
+
+OrQuery::OrQuery(const Query& l, const Query& r)
+	:BinaryQuery(l, r, "|") {std::cout<<"OrQuery::OrQuery(const Query& l, const Query& r)"<<std::endl;}
+
+Query operator|(const Query& l, const Query& r)
+{
+	return std::shared_ptr<Query_Base>(new OrQuery(l, r));
+}
+
+QueryResult OrQuery::eval(const TextQuery& t)const
+{
+	auto right = rhs.eval(t), left = lhs.eval(t);
+	auto ret_lines = std::make_shared<std::set<std::vector<std::string>::size_type>>
+		(left.begin(), left.end());
+
+	ret_lines->insert(right.begin(), right.end());
+	return QueryResult(rep(), left.get_file(), ret_lines);
+}
+
+//queryhistory.h
+
+#ifndef QUERYHISTORY_H
+#define QUERYHISTORY_H
+
+#include<memory>
+#include<vector>
+#include"Query.h"
+
+class QueryHistory
+{
+public:
+	Query& operator[](size_t n)
+	{
+		return *(query_vec[n]);
+	}
+	std::size_t add_query(const Query&);
+private:
+	std::vector<std::shared_ptr<Query>> query_vec;
+};
+
+#endif
+
+//queryhistory.cpp
+
+#include"queryhistory.h"
+#include<memory>
+
+size_t QueryHistory::add_query(const Query &query)
+{
+	std::shared_ptr<Query> p = std::make_shared<Query>(query);
+	query_vec.push_back(p);
+	return query_vec.size() - 1;
+}
+
+//main.cpp
+
+#include <iostream>
+#include "Query.h"
+#include "queryhistory.h"
+int main()
+{
+	std::ifstream fin("D:\\文件.txt");
+	TextQuery text(fin);
+	QueryHistory history;
+	Query q0("Alice");
+	Query q1("hair");
+	Query q2("Daddy");
+
+	history.add_query(q0);
+	history.add_query(q1);
+	history[0] = history[0] | q2;
+
+	auto result = history[0].eval(text);
+	print(std::cout, result);
+	return 0;
+}
