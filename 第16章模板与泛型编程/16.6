@@ -1,0 +1,10 @@
+const T* begin(const T(&arr)[N])noexcept
+{
+	return arr;
+}
+
+template<typename T,unsigned int N>
+const T* end(const T(&arr)[N])noexcept
+{
+	return arr + N;
+}
