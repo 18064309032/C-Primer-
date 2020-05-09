@@ -1,0 +1,5 @@
+template<typename T,const unsigned int N>
+constexpr unsigned int size(const T(&)[N])
+{
+	return N;
+}
