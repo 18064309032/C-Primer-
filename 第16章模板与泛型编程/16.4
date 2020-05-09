@@ -1,0 +1,7 @@
+template<typename Iterator, typename Value>
+Iterator find_(Iterator first, const Iterator last, const  Value value)
+{
+	for (; first != last && *first != value; ++first);
+		/*if (*first == value)*/
+	return first;
+}
