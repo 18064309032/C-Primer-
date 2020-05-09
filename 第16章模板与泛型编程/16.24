@@ -1,0 +1,7 @@
+
+template<typename T>
+template<typename It>
+Blob<T>::Blob(It& first, It& last) :m_data(std::make_shared<std::vector<T>>(first, last))
+{
+
+}
