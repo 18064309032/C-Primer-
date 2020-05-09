@@ -1,5 +1,9 @@
 template<typename T>
 struct DebugDelete
 {
-	void operator()(T* t) { std::cout << t << " "; }
+	void operator()(T* t)
+     { 
+         std::cout << t << " "; 
+         delete t;
+     }
 };
