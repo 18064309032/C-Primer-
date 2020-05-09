@@ -1,0 +1,165 @@
+#include <vector>
+#include <memory>
+#include <string>
+template<typename T>class Vec
+{
+private:
+	T* element;
+	T* first_free;
+	T* cap;
+	std::allocator<T> alloc;
+public:
+	Vec();
+	Vec(std::initializer_list<T>);
+	Vec(const Vec&);
+	Vec& operator=(const Vec&);
+	~Vec();
+public:
+	void push_bak(const T&);
+	std::size_t size()const;
+	std::size_t capacity()const;
+	T* begin()const;
+	T* end()const;
+	void reserve(std::size_t);
+	void resize(std::size_t);
+	void resize(std::size_t, const T&);
+	void free();
+private:
+	std::pair<T*, T*> alloc_n_copy(T* first, T* last);
+	void reallocate();
+	void chk_n_alloc();
+	void alloc_n_move(std::size_t);
+};
+
+template<typename T>
+Vec<T>::Vec() :element(nullptr), first_free(nullptr), cap(nullptr) {}
+
+template<typename T>
+Vec<T>::Vec(std::initializer_list<T> il)
+{
+	T* newdata = alloc.allocate(il.size());
+	T* p = newdata;
+	for (const auto& t : il)
+		alloc.construct(p++, t);
+	element = newdata;
+	first_free = cap = element + il.size();
+}
+
+template<typename T>
+Vec<T>::Vec(const Vec& t)
+{
+	std::pair<T*, T*> newdata = alloc_n_copy(t.begin(), t.end());
+	element = newdata.first;
+	first_free = cap = newdata.second;
+}
+
+template<typename T>
+std::size_t Vec<T>::size()const { return first_free - element; }
+
+template<typename T>
+std::size_t Vec<T>::capacity()const { return cap - element; }
+
+template<typename T>
+T* Vec<T>::begin()const { return element; }
+
+template<typename T>
+T* Vec<T>::end()const { return first_free; }
+
+template<typename T>
+void Vec<T>::reserve(std::size_t n)
+{
+	if (n < capacity())return;
+	alloc_n_move();
+}
+
+template<typename T>
+void Vec<T>::resize(std::size_t n)
+{
+	resize(n, T());
+}
+
+template<typename T>
+void Vec<T>::resize(std::size_t n, const T& t)
+{
+	if (n < size())
+	{
+		for (auto p = element + n; p != first_free;)
+			alloc.destroy(p++);
+		first_free = element + n;
+	}
+	else if (n > size())
+	{
+		for (auto i = size(); i != n; i++)
+			push_bak(t);
+	}
+
+}
+
+template<typename T>
+Vec<T>& Vec<T>::operator=(const Vec& t)
+{
+	std::pair<T*, T*> newdata = alloc_n_copy(t.begin(), t.end());
+	free();
+	element = newdata.first;
+	first_free = cap = newdata.second;
+	return *this;
+}
+
+template<typename T>
+void Vec<T>::push_bak(const T& t)
+{
+	chk_n_alloc();
+	alloc.construct(first_free++, t);
+}
+
+template<typename T>
+void Vec<T>::free()
+{
+	if (element)
+	{
+		for (auto p = first_free; p != element;)
+			alloc.destroy(--p);
+
+		alloc.deallocate(element, capacity());
+	}
+}
+
+template<typename T>
+Vec<T>::~Vec() { free(); }
+
+template<typename T>
+void Vec<T>::reallocate()
+{
+	std::size_T newsize = size() ? 2 * size() : 1;
+	alloc_n_move(newsize);
+}
+
+template<typename T>
+void Vec<T>::chk_n_alloc()
+{
+	if (size() == capacity())
+		reallocate();
+}
+
+template<typename T>
+void Vec<T>::alloc_n_move(std::size_t n)
+{
+	std::size_t newsize = n;
+	T* newdata = alloc.allocate(newsize);
+	T* dest = newdata;
+	T* elem = element;
+	for (std::size_t i = 0; i != size(); ++i)
+		alloc.construct(dest++.std::move(*elem++));
+	free();
+	element = newdata;
+	first_free =dest;
+	cap = element + newsize();
+}
+
+template<typename T>
+std::pair<T*, T*> Vec<T>::alloc_n_copy(T* first, T* last)
+{
+	auto newdata = alloc.allocate(last - first);
+	return { newdata,std::uninitialized_copy(first,last,newdata); }
+}
+
