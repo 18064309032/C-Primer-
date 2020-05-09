@@ -71,7 +71,7 @@ T& Blob<T>::back()
 template<typename T>
 T& Blob<T>::operator[](std::size_t sz)
 {
-	check(i, "subscript out of range");
+	check(0, "subscript out of range");
 	return (*m_data)[sz];
 }
 
@@ -85,7 +85,7 @@ const T& Blob<T>::back()const
 template<typename T>
 const T& Blob<T>::operator[](std::size_t sz)const
 {
-	check(i, "subscript out of range");
+	check(0, "subscript out of range");
 	return (*m_data)[sz];
 }
 #endif
@@ -170,9 +170,9 @@ T& BlobPtr<T>::operator*()const
 
 template<typename T>
 T& BlobPtr<T>::operator++()
-{
-	check(0, "increment past end of StrBlob");
+{	
 	++m_curr;
+    check(m_curr, "increment past end of StrBlob");
 	return *this;
 }
 
