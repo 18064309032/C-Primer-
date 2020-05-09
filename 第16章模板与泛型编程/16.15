@@ -1,0 +1,19 @@
+//类的 operator<< 和 operator>> 应该是类的友元。
+	friend std::ostream& operator<<(std::ostream& os, const Screen<H, W>& c)
+	{
+		unsigned int i, j;
+		for (i = 0; i < c.hight; ++i)
+		{
+			os << c.contents.substr(0, W) << std::endl;
+		}
+		return os;
+	}
+
+	friend std::istream& operator>>(std::istream& is, Screen<H, W>& c)
+	{
+		char a;
+		is >> a;
+		std::string tmp(H * W, a);
+		c.contents = tmp;
+		return is;
+	}
