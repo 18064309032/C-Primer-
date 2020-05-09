@@ -1,0 +1,202 @@
+//Blob.h
+
+#ifndef BLOB_H
+#define BLOB_H
+
+#include <vector>
+#include <string>
+#include <memory>
+#include <initializer_list>
+#include <stdexcept>
+template<typename T>
+class Blob
+{
+private:
+	std::shared_ptr<std::vector<T>> m_data;
+private:
+	void check(std::size_t, const std::string&)const;
+public:
+	Blob();
+	Blob(std::initializer_list<T>);
+	std::size_t size()const;
+	bool empty()const;
+	void push_back(const T&);
+	void push_back(T&&);
+	void pop_back();
+	T& back();
+	T& operator[](std::size_t);
+	const T& back()const;
+	const T& operator[](std::size_t)const;
+};
+
+template<typename T>
+void Blob<T>::check(std::size_t sz, const std::string& msg)const
+{
+	if (sz >= m_data->size())
+		throw std::out_of_range(msg);
+}
+
+template<typename T>
+Blob<T>::Blob() :m_data(std::make_shared<std::vector<T>>()) {}
+
+template<typename T>
+Blob<T>::Blob(std::initializer_list<T> il) : m_data(std::make_shared<std::vector<T>>(il)) {}
+
+template<typename T>
+std::size_t Blob<T>::size()const { return m_data->size(); }
+
+template<typename T>
+bool Blob<T>::empty()const { return m_data->empty(); }
+
+template<typename T>
+void Blob<T>::push_back(const T& t) { m_data->push_back(t); }
+
+template<typename T>
+void Blob<T>::push_back(T&& t) { m_data->push_back(std::move(t)); }
+
+template<typename T>
+void Blob<T>::pop_back()
+{
+	check(0, "pop_back on empty Blob");
+	m_data->pop_back(); 
+}
+
+template<typename T>
+T& Blob<T>::back()
+{
+	check(check(0, "back on empty Blob"));
+	return m_data->back();
+}
+
+template<typename T>
+T& Blob<T>::operator[](std::size_t sz)
+{
+	check(i, "subscript out of range");
+	return (*m_data)[sz];
+}
+
+template<typename T>
+const T& Blob<T>::back()const
+{
+	check(0, "back on empty Blob");
+	return m_data->back();
+}
+
+template<typename T>
+const T& Blob<T>::operator[](std::size_t sz)const
+{
+	check(i, "subscript out of range");
+	return (*m_data)[sz];
+}
+#endif
+
+//BlobPtr.h
+
+#ifndef BLOBPTR_H
+#define BLOBPTR_H
+
+#include "Blob.h"
+
+template<typename T>class BlobPtr;
+
+template<typename T>
+bool operator==(const BlobPtr<T>&, const BlobPtr<T>&);
+
+template<typename T>
+bool operator<(const BlobPtr<T>&, const BlobPtr<T>&);
+
+template<typename T>
+class BlobPtr
+{
+private:
+	friend class Blob<T>;
+private:
+	friend bool operator==(const BlobPtr<T>&, const BlobPtr<T>&);
+	friend bool operator<(const BlobPtr<T>&, const BlobPtr<T>&);
+private:
+	std::size_t m_curr;
+	std::weak_ptr<std::vector<T>> m_data;
+private:
+	std::shared_ptr<std::vector<T>> check(std::size_t, const std::string&)const;
+public:
+	BlobPtr();
+	BlobPtr(Blob&, std::size_t=0);
+	T& operator*()const;
+	T& operator++();
+	T& operator--();
+	T& operator++(int);
+	T& operator--(int);
+};
+
+template<typename T>
+bool operator==(const BlobPtr<T>& lhs, const BlobPtr<T>& rhs)
+{
+	if (lhs.m_data.lock != rhs.m_data.lock)
+		throw std::runtime_error("ptrs to different Blobs!");
+	return lhs.m_curr == rhs.m_curr;
+}
+
+template<typename T>
+bool operator<(const BlobPtr<T>& lhs, const BlobPtr<T>& rhs)
+{
+	if (lhs.m_data.lock！ = rhs.m_data.lock)
+		throw std::runtime_error("ptrs to different Blobs!");
+	return lhs.m_curr < rhs.m_curr;
+}
+
+template<typename T>
+std::shared_ptr<std::vector<T>> BlobPtr<T>::check(std::size_t sz, const std::string& msg)const
+{
+	auto ret = m_data.lock();
+	if (!ret)
+		throw std::runtime_error("错误");
+	if (sz > ret->size())
+		throw std::out_of_range(msg);
+	return ret;
+}
+
+template<typename T>
+BlobPtr<T>::BlobPtr() :m_data(nullptr), m_curr(0) {}
+
+template<typename T>
+BlobPtr<T>::BlobPtr(Blob<T>& a, std::size_t sz) : m_data(a.m_data), m_curr(sz) {}
+
+template<typename T>
+T& BlobPtr<T>::operator*()const
+{
+	auto p = check(0, "dereference past end");
+	return (*p)[m_curr];
+}
+
+template<typename T>
+T& BlobPtr<T>::operator++()
+{
+	check(0, "increment past end of StrBlob");
+	++m_curr;
+	return *this;
+}
+
+template<typename T>
+T& BlobPtr<T>::operator--()
+{
+	--m_curr;
+	check(curr, "decrement past begin of BlobPtr");
+	return *this;
+}
+
+template<typename T>
+T& BlobPtr<T>::operator++(int)
+{
+	BlobPtr<T> ret = *this;
+	++* this;
+	return ret;
+}
+
+template<typename T>
+T& BlobPtr<T>::operator--(int)
+{
+	BlobPtr<T> ret = *this;
+	--* this;
+	return ret;
+}
+#endif
