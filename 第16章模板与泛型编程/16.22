@@ -1,0 +1,3 @@
+
+unique_ptr<int,Debugdelete> m(new int,Debugdelete());//P418页见表12.4
+shared_ptr<int> n(new int,Debugdelete());//P412页见表12.3
