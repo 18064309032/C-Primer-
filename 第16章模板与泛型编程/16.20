@@ -1,0 +1,6 @@
+template<typename T>
+void print(T& t)
+{
+	for (auto iter = t.begin(); iter != t.end(); ++iter)
+		std::cout << *iter << " ";
+}
