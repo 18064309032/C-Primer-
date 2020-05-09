@@ -1,0 +1,47 @@
+#ifndef SCREEN_H
+#define SCREEN_H
+#include <string>
+
+template<unsigned int H,unsigned int W>
+class Screen
+{
+private:
+	typedef std::string::size_t pos;
+	pos cursor;
+	pos hight = H, width = W;
+	std::string contents;
+public:
+	Screen() = default;
+	Screen(char c) :contents(H* W, c) {}
+	char get()const { return contents[cursor]; }
+	Screen& move(pos r, pos c);
+	friend std::ostream& operator<<(std::ostream& os, const Screen<H, W>& c)
+	{
+		unsigned int i, j;
+		for (i = 0; i < c.hight; ++i)
+		{
+			os << c.contents.substr(0, W) << std::endl;
+		}
+		return os;
+	}
+
+	friend std::istream& operator>>(std::istream& is, Screen<H, W>& c)
+	{
+		char a;
+		is >> a;
+		std::string tmp(H * W, a);
+		c.contents = tmp;
+		return is;
+	}
+
+
+};
+
+template <unsigned int H,unsigned int W>inline
+Screen<H,W>& Screen<H, W>::move(pos r, pos c)
+{
+	pos row = r * width;
+	cursor = row + c;
+	return *this;
+}
+#endif
