@@ -1,0 +1,5 @@
+//可以。提供显式的模版实参：
+
+int a = 1;
+double b = 2;
+std::max<double>(a, b);
