@@ -1,0 +1,5 @@
+template<typename T,typename...Args>
+void foo(const T& t, const Args&...args)
+{
+	std::cout << sizeof...(args);
+}
