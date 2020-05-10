@@ -1,0 +1,7 @@
+template <typename It>
+auto fcn3(It beg, It end) -> decltype(*beg + 0)
+{
+	//处理序列
+	return *beg;
+}
+//合法。该类型需要支持 + 操作。
