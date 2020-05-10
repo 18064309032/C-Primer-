@@ -1,0 +1,4 @@
+extern template class vector<string>;
+template class vector<Sales_data>;
+//前者是模板声明
+//后者是实例化定义
