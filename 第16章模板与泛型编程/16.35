@@ -1,0 +1,11 @@
+template <typename T> T calc(T, int);
+tempalte <typename T> T fcn(T, T);
+double d; float f; char c;
+(a) calc(c, 'c'); 
+(b) calc(d, f);
+(c) fcn(c, 'c');
+(d) fcn(d, f);
+(a) 合法，类型为char
+(b) 合法，类型为double
+(c) 合法，类型为char
+(d) 不合法，这里无法确定T的类型是float还是double
