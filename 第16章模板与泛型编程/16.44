@@ -1,0 +1,2 @@
+//当声明为T的时候, 模板参数T对于g(i)为int,对于g(ci)为const int,对于g(i * ci)为int。 
+//当声明为const T&的时候，模板参数T对这三个调用都为int。
