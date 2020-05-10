@@ -1,0 +1,2 @@
+std::vector<NoDefault> vec(10);
+//会使用 NoDefault 的默认构造函数，而 NoDefault 没有默认构造函数，因此是不可以的。
