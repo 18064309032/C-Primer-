@@ -1,0 +1,16 @@
+template <>
+size_t get_number(const char* t, std::vector<const char*> const &vt)
+{
+    size_t n = 0;
+    auto iter = vt.begin();
+
+    do{
+        iter = std::find(iter, vt.end(), t);
+        if(iter != vt.end())
+        {
+            ++n;
+            ++iter;
+        }
+    }while(iter != vt.end());
+    return n;
+}
