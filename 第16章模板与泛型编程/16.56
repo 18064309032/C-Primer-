@@ -1,0 +1,5 @@
+template<typename...Args>
+std::ostream& errorMsg(std::ostream& os, Args...args)
+{
+	print(os, debug_rep(args)...);
+}
