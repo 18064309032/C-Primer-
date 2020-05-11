@@ -1,0 +1,18 @@
+#include "Sales_data.h"
+#include <iostream>
+#include <unordered_set>
+namespace std
+{
+	template<>
+	struct hash<Sales_data>
+	{
+		std::size_t operator()(const Sales_data& s)const;
+	};
+
+	std::size_t hash<Sales_data>::operator()(const Sales_data& s)const
+	{
+		return hash<std::string>()(s.m_bookNo) ^
+			hash<unsigned int>()(s.m_units_sold) ^
+			hash<double>()(s.m_revenue);
+	}
+}
