@@ -1,0 +1,7 @@
+template<typename T>
+template<typename...Args>
+void Vec<T>::emplace_back(Args&&...args)
+{
+	chk_n_alloc();
+	alloc.construct(first_free++, std::forward<Args>(args)...);
+}
