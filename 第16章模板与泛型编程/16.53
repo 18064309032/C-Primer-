@@ -1,0 +1,11 @@
+template<typename T>
+std::ostream& print(std::ostream& os, const T& t)
+{
+	return std::cout << t << " ";
+}
+
+template<typename T,typename...Args>
+std::ostream& print(std::ostream& os, const T& t, const Args...args)
+{
+	return print(os<<t, args...);
+}
