@@ -1,0 +1,36 @@
+#include <bitset>
+#include <iostream>
+template<unsigned int N>
+
+class quiz
+{
+private:
+	template<unsigned int M>
+	friend std::ostream& operator<<(std::ostream& os, const quiz<M>& q);
+private:
+	std::bitset<N> bset;
+public:
+	quiz(const std::string& str) :bset(str) {}
+	void updata(unsigned int n, bool b)
+	{
+		bset[n] = b;
+	}
+};
+
+template<unsigned int M>
+std::ostream& operator<<(std::ostream& os, const quiz<M>& q)
+{
+	os << q.bset;
+	return os;
+}
+
+int main()
+{
+	std::string s1{ "0000000000" };
+	std::string s2("0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101");
+	quiz<10> q1(s1);
+	quiz<100> q2(s2);
+	q1.updata(2, true);
+	std::cout << q1;
+	return 0;
+}
