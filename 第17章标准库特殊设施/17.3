@@ -1,0 +1,126 @@
+//TextQuery.h
+#include <iostream>
+#include <vector>
+#include <string>
+#include <tuple>
+#include <map>
+#include <set>
+#include <fstream>
+#include <algorithm>
+#include <sstream>
+class QueryResult;
+
+class TextQuery
+{
+private:
+	//读取文件存入m_data
+	std::shared_ptr<std::vector<std::string>> m_data;
+	//关键字和行号
+	std::map<std::string, std::shared_ptr<std::set<std::vector<std::string>::size_type>>> m_map;
+public:
+	//构造函数，打开并读取文件,将每行内容分解为关键字和行号
+	TextQuery(std::ifstream&);
+	//查询单词并返回关键字和行号以及文件
+	std::tuple<std::string, std::shared_ptr<std::set<std::vector<std::string>::size_type>>,
+		std::shared_ptr<std::vector<std::string>>>
+		query(const std::string&)const;
+};
+
+class QueryResult
+{
+private:
+	//单词
+	std::string m_sought;
+	//行号
+	std::shared_ptr<std::set<std::vector<std::string>::size_type>> m_lines;
+	//文件
+	std::shared_ptr<std::vector<std::string>> m_file;
+private:
+	friend std::ostream& print(std::ostream&, const std::tuple<std::string, 
+		std::shared_ptr<std::set<std::vector<std::string>::size_type>>,
+		std::shared_ptr<std::vector<std::string>>>&);
+public:
+
+	//构造函数,初始化数据
+	QueryResult(std::string, std::shared_ptr<std::set<std::vector<std::string>::size_type>>,
+		std::shared_ptr<std::vector<std::string>>);
+	//行号开始迭代器
+	std::set<std::vector<std::string>::size_type>::iterator begin()const;
+	//行号末尾迭代器
+	std::set<std::vector<std::string>::size_type>::iterator end()const;
+	//获取文件
+	const std::shared_ptr<std::vector<std::string>>& getFile()const;
+};
+std::ostream& print(std::ostream&, const std::tuple<std::string, 
+	std::shared_ptr<std::set<std::vector<std::string>::size_type>>,
+	std::shared_ptr<std::vector<std::string>>>&);
+
+//QueryResult.cpp
+#include "TextQuery.h"
+
+TextQuery::TextQuery(std::ifstream& ifs)
+	:m_data(std::make_shared<std::vector<std::string>>())
+{
+	std::string text;
+	while (std::getline(ifs, text))
+	{
+		m_data->push_back(text);
+		int line_number = m_data->size() - 1;
+		std::stringstream stream(text);
+		std::string word;
+		while (stream >> word)
+		{
+			auto& lines = m_map[word];
+			if (!lines)
+				lines.reset(new std::set<std::vector<std::string>::size_type>());
+			lines->insert(line_number);
+		}
+	}
+}
+
+std::tuple<std::string, std::shared_ptr<std::set<std::vector<std::string>::size_type>>,
+	std::shared_ptr<std::vector<std::string>>>
+	TextQuery::query(const std::string& word)const
+{
+	static std::shared_ptr<std::set<std::vector<std::string>::size_type>> nodata =
+		std::make_shared<std::set<std::vector<std::string>::size_type>>();
+	auto loc = m_map.find(word);
+	if (loc == m_map.end())
+		return std::make_tuple(word, nodata, m_data);
+	else
+		return std::make_tuple(word, loc->second, m_data);
+}
+
+
+QueryResult::QueryResult(std::string word,
+	std::shared_ptr<std::set<std::vector<std::string>::size_type>> line_number,
+	std::shared_ptr<std::vector<std::string>> file)
+	:m_sought(word), m_lines(line_number), m_file(file) {}
+
+
+std::set<std::vector<std::string>::size_type>::iterator QueryResult::begin()const
+{
+	return m_lines->begin();
+}
+
+
+std::set<std::vector<std::string>::size_type>::iterator QueryResult::end()const
+{
+	return m_lines->end();
+}
+
+
+const std::shared_ptr<std::vector<std::string>>& QueryResult::getFile()const
+{
+	return m_file;
+}
+
+std::ostream& print(std::ostream& os, const std::tuple<std::string, 
+	std::shared_ptr<std::set<std::vector<std::string>::size_type>>,
+	std::shared_ptr<std::vector<std::string>>>& qr)
+{
+	os << std::get<0>(qr) << std::get<1>(qr)->size() << std::endl;
+	for (auto sum : *(std::get<1>(qr)))
+		std::cout << sum + 1 << *(std::get<2>(qr)->begin() + sum) << std::endl;
+	return os;
+}
