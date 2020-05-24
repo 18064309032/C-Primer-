@@ -1,0 +1,14 @@
+#include <regex>
+#include <string>
+#include <iostream>
+
+int main()
+{
+	std::string pattern("[[:alpha:]]*[^c]ei[[:alpha:]]*");
+	std::regex r(pattern);
+	std::string s("freind receipt theif receive");
+
+	for (std::sregex_iterator it(s.begin(), s.end(), r), end; it != end; ++it)
+		std::cout << it->str() << std::endl;;
+	return 0;
+}
