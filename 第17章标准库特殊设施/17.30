@@ -1,0 +1,33 @@
+#include <iostream>
+#include <string>
+#include <random>
+
+//unsigned int random()
+//{
+//	static std::default_random_engine e;
+//	static std::uniform_int_distribution<unsigned int> u;
+//	return u(e);
+//}
+
+//unsigned int random(unsigned int n)
+//{
+//	static std::default_random_engine e(n);
+//	static std::uniform_int_distribution<unsigned int> u;
+//	return u(e);
+//}
+
+unsigned int random(unsigned int n,unsigned int min,unsigned int max)
+{
+	static std::default_random_engine e(n);
+	static std::uniform_int_distribution<unsigned int> u(min,max);
+	return u(e);
+}
+
+int main()
+{
+	//std::cout << random(20);
+	//std::cout << random();
+	for (auto i = 0; i != 10; ++i)
+		std::cout << random(1, 20, 50);
+	return 0;
+}
