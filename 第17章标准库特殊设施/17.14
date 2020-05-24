@@ -1,0 +1,23 @@
+#include <iostream>
+#include <regex>
+
+int main()
+{
+	try
+	{
+		std::regex r1("[[:anum:]]+\\.(cpp|cxx|cc)$");
+	}
+	catch (std::regex_error e)
+	{
+		std::cerr << e.what() << "\n"<<e.what() << std::endl;
+	}
+	try
+	{
+		std::regex r2("[[anum]]+\\.(cpp|cxx|cc)$");
+	}
+	catch(std::regex_error e)
+	{
+		std::cerr << e.what() << "\n"<<e.code() << std::endl;
+	}
+	return 0;
+}
