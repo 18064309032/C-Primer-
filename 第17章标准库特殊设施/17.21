@@ -1,0 +1,67 @@
+#include <regex>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <fstream>
+
+struct PersonInfo
+{
+	std::string name;
+	std::vector<std::string> phones;
+};
+
+bool valid(const std::smatch& m)
+{
+	if (m[1].matched)
+		return m[3].matched && (m[4].matched == false || m[4].str() == " ");
+	else
+		return !m[3].matched && (m[4].str() == m[6].str());
+}
+
+std::string format(const std::string& s)
+{
+	return s;
+}
+
+int main()
+{
+	std::string line, word;
+	std::vector<PersonInfo> people;
+	std::istringstream record;
+	std::ifstream ifs("D:\\文件.txt");
+	std::ofstream ofs("D:\\新文件.txt");
+	std::string phone("(\\()?(\\d){3}(\\))?([-. ])?(\\d{3})([-. ])?(\\d{4})");
+	std::regex r(phone);
+	std::string s;
+	while (std::getline(ifs, line))
+	{
+		record.str(line);
+		PersonInfo info;
+		record >> info.name;
+		while (record >> word)
+			info.phones.push_back(word);
+		record.clear();
+		people.push_back(info);
+	}
+	for (const auto& person : people)
+	{
+		std::ostringstream formatted, badNums;
+		for (const auto& ph : person.phones)
+		{
+			for (std::sregex_iterator it(ph.begin(), ph.end(), r), end; it != end; ++it)
+			{
+				if (!valid(*it))
+					badNums << " " << ph;
+				else
+					formatted << " " << (*it)[2] << " " << (*it)[2] << " " << (*it)[2] << std::endl;
+			}
+		}
+		if (badNums.str().empty())
+			ofs << person.name << " " << formatted.str() << std::endl;
+		else
+			std::cerr << " input error: " << person.name << " invalid number(s) "\
+			<< badNums.str() << std::endl;
+	}
+	return 0;
+}
