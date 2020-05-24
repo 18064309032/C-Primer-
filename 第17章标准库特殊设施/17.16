@@ -1,0 +1,23 @@
+#include <regex>
+#include <string>
+#include <iostream>
+
+int main()
+{
+	std::string test("[^c]ie");
+	std::regex r(test);
+	std::smatch m;
+	std::string word;
+	while (std::cin >> word)
+	{
+		if (std::regex_search(word, m, r))
+		{
+			std::cout << word << ":is correct" << std::endl;
+			for (auto i = 0; i != m.size();++i)
+				std::cout << m[i] << std::endl;
+		}
+		else
+			std::cout << word << ":is error" << std::endl;
+	}
+	return 0;
+}
