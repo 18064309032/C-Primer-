@@ -1,0 +1,8 @@
+#include <iostream>
+#include <string>
+#include <algorithm>
+int main()
+{
+	std::cout << std::uppercase << std::hexfloat << std::sqrt(2.0);
+	return 0;
+}
