@@ -1,0 +1,32 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+int main()
+{
+	std::fstream inOut("D:\\文件.txt", std::fstream::ate | std::fstream::in | std::fstream::out);
+
+	if (!inOut)
+	{
+		std::cerr << "Unable to open file!" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	auto end_mark = inOut.tellg();//返回当前标志位置
+	inOut.seekg(0, std::fstream::beg);//将标志放在开始
+	size_t cnt = 0;
+	std::string line;
+	//判断打开文件以及标志位置是否在末尾,读取一行文字放入line
+	while (inOut && inOut.tellg() != end_mark && std::getline(inOut, line))
+	{
+		cnt += line.size() + 1;//加上换行符
+		auto mark = inOut.tellg();//记住当前标志位置
+		inOut.seekp(0, std::fstream::end);//将标志放在结尾
+		inOut << cnt;//输出行号
+		if (mark != end_mark) inOut << " ";//判断标志是否到了结尾
+		inOut.seekg(mark);//将标志重新定位到上次读取位置
+	}
+	inOut.seekp(0, std::fstream::end);//将标志放在末尾
+	inOut << "\n";//输出换行符
+
+	return 0;
+}
